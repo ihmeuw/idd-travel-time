@@ -32,7 +32,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import pandas as pd
@@ -73,9 +73,9 @@ class BenchmarkResult:
     surfaces: dict[str, TravelTimeSurface]
     scores: pd.DataFrame
     timing: dict[str, float] = field(default_factory=dict)
-    pairwise: dict[str, dict] = field(default_factory=dict)
+    pairwise: dict[str, dict[str, Any]] = field(default_factory=dict)
     ground_truth_with_preds: gpd.GeoDataFrame | None = None
-    config: dict = field(default_factory=dict)
+    config: dict[str, Any] = field(default_factory=dict)
 
     def summary(self) -> str:
         """Human-readable summary of scores."""
@@ -149,7 +149,10 @@ def run_benchmark(
         t0 = time.monotonic()
         try:
             surfaces[name] = router.compute_surface(
-                destination, bbox, resolution_deg, mode,
+                destination,
+                bbox,
+                resolution_deg,
+                mode,
                 transit_profile=transit_profile,
             )
         except Exception as exc:  # noqa: BLE001
@@ -158,8 +161,11 @@ def run_benchmark(
 
     if errors:
         import warnings
+
         for name, msg in errors.items():
-            warnings.warn(f"Backend {name!r} failed: {msg}", RuntimeWarning, stacklevel=2)
+            warnings.warn(
+                f"Backend {name!r} failed: {msg}", RuntimeWarning, stacklevel=2
+            )
 
     # --- Score against ground truth -------------------------------------
     scores = pd.DataFrame()
@@ -172,17 +178,20 @@ def run_benchmark(
         # Augment ground truth with all predictions
         gt_aug = gt.copy()
         for name, surface in surfaces.items():
-            from idd_travel_time.access.metrics import _sample_surface_at_points  # noqa: PLC0415
+            from idd_travel_time.access.metrics import (
+                _sample_surface_at_points,
+            )
+
             preds = _sample_surface_at_points(surface, gt_aug)
             gt_aug[f"pred_{name}_min"] = preds
-            gt_aug[f"resid_{name}_min"] = preds - gt_aug[obs_col].values
+            gt_aug[f"resid_{name}_min"] = preds - gt_aug[obs_col].to_numpy()
         gt_with_preds = gt_aug
 
     # --- Pairwise pixel comparisons ------------------------------------
-    pairwise: dict[str, dict] = {}
+    pairwise: dict[str, dict[str, Any]] = {}
     names = list(surfaces.keys())
     for i, a in enumerate(names):
-        for b in names[i + 1:]:
+        for b in names[i + 1 :]:
             key = f"{a}_vs_{b}"
             pairwise[key] = compare_surfaces(surfaces[a], surfaces[b])
 
@@ -235,8 +244,8 @@ def make_synthetic_ground_truth(
     random_seed:
         RNG seed.
     """
-    import geopandas as gpd  # noqa: PLC0415
-    from shapely.geometry import Point  # noqa: PLC0415
+    import geopandas as gpd
+    from shapely.geometry import Point
 
     rng = np.random.default_rng(random_seed)
 
@@ -258,7 +267,7 @@ def make_synthetic_ground_truth(
     noisy_times = true_times + rng.normal(0, noise_std_min, size=n)
     noisy_times = np.clip(noisy_times, 0.0, None)
 
-    geometries = [Point(lon, lat) for lon, lat in zip(lons, lats)]
+    geometries = [Point(lon, lat) for lon, lat in zip(lons, lats, strict=False)]
     return gpd.GeoDataFrame(
         {
             "travel_time_min": noisy_times.astype(np.float32),

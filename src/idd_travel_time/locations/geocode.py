@@ -34,12 +34,9 @@ import time
 import warnings
 from pathlib import Path
 from threading import Lock
-from typing import TYPE_CHECKING
+from typing import Any
 
 import requests
-
-if TYPE_CHECKING:
-    pass
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -85,16 +82,20 @@ class GeocodeCache:
             self._flush_disk()
 
     def _load_disk(self) -> None:
-        assert self._path is not None
+        assert self._path is not None  # noqa: S101  # narrowed by caller
         if self._path.exists():
             try:
                 raw = json.loads(self._path.read_text())
-                self._mem = {k: tuple(v) for k, v in raw.items()}  # type: ignore[misc]
+                self._mem = {k: tuple(v) for k, v in raw.items()}
             except Exception:  # noqa: BLE001
-                pass  # corrupted cache — start fresh
+                warnings.warn(
+                    f"Geocode cache at {self._path} is unreadable; starting fresh.",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
 
     def _flush_disk(self) -> None:
-        assert self._path is not None
+        assert self._path is not None  # noqa: S101  # narrowed by caller
         self._path.parent.mkdir(parents=True, exist_ok=True)
         tmp = self._path.with_suffix(".tmp")
         tmp.write_text(json.dumps({k: list(v) for k, v in self._mem.items()}, indent=2))
@@ -132,7 +133,7 @@ def _cache_key(place: str, country_hint: str | None, language: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _rate_limited_get(url: str, params: dict) -> list[dict]:
+def _rate_limited_get(url: str, params: dict[str, Any]) -> list[dict[str, Any]]:
     """Make a Nominatim request, honouring the 1 req/s rate limit."""
     global _last_request_time  # noqa: PLW0603
     with _rate_lock:
@@ -148,7 +149,7 @@ def _rate_limited_get(url: str, params: dict) -> list[dict]:
         _last_request_time = time.monotonic()
 
     resp.raise_for_status()
-    return resp.json()  # type: ignore[return-value]
+    return resp.json()  # type: ignore[no-any-return]
 
 
 # ---------------------------------------------------------------------------
@@ -192,7 +193,7 @@ def geocode(
     if cached is not None:
         return cached
 
-    params: dict = {
+    params: dict[str, Any] = {
         "q": place,
         "format": "json",
         "limit": 1,
@@ -204,14 +205,16 @@ def geocode(
     try:
         results = _rate_limited_get(_NOMINATIM_URL, params)
     except requests.RequestException as exc:
-        raise GeocodingError(f"Nominatim request failed for {place!r}: {exc}") from exc
+        msg = f"Nominatim request failed for {place!r}: {exc}"
+        raise GeocodingError(msg) from exc
 
     if not results:
         hint = f" (country_hint={country_hint!r})" if country_hint else ""
-        raise GeocodingError(
+        msg = (
             f"No geocoding results for {place!r}{hint}. "
             "Try a more specific query or add a country_hint."
         )
+        raise GeocodingError(msg)
 
     best = results[0]
     coords: tuple[float, float] = (float(best["lat"]), float(best["lon"]))

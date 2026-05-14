@@ -44,11 +44,17 @@ from idd_travel_time.access.surface import BoundingBox, TravelTimeSurface
 from idd_travel_time.access.surface_router import SurfaceRouter
 
 if TYPE_CHECKING:
+    from affine import Affine
+
     from idd_travel_time.constants import TransportMode
     from idd_travel_time.models import TransitProfile
 
 # Cells with friction > this are treated as impassable (open water, cliffs, …)
-_IMPASSABLE_THRESHOLD_MIN_PER_M: float = 1.0   # > 1 min/m = impassable
+_IMPASSABLE_THRESHOLD_MIN_PER_M: float = 1.0  # > 1 min/m = impassable
+
+# Relative tolerance for "friction raster's native resolution matches the
+# requested resolution_deg." If exceeded, the surface is resampled.
+_RESOLUTION_REL_TOLERANCE: float = 0.01
 
 
 class FrictionSurfaceRouter(SurfaceRouter):
@@ -89,21 +95,20 @@ class FrictionSurfaceRouter(SurfaceRouter):
         resolution_deg: float,
         mode: TransportMode,
         *,
-        transit_profile: TransitProfile | None = None,
+        transit_profile: TransitProfile | None = None,  # noqa: ARG002  # abstract-interface conformance
     ) -> TravelTimeSurface:
         """Compute travel-time surface via MCP_Geometric least-cost path."""
+        import importlib.util
+
         try:
-            from skimage.graph import MCP_Geometric  # noqa: PLC0415
+            from skimage.graph import MCP_Geometric
         except ImportError as exc:
             msg = "scikit-image is required for FrictionSurfaceRouter: pip install scikit-image"
             raise ImportError(msg) from exc
 
-        try:
-            import rasterio  # noqa: PLC0415
-            from rasterio.transform import rowcol  # noqa: PLC0415
-        except ImportError as exc:
+        if importlib.util.find_spec("rasterio") is None:
             msg = "rasterio is required for FrictionSurfaceRouter: pip install rasterio"
-            raise ImportError(msg) from exc
+            raise ImportError(msg)
 
         dest_lat, dest_lon = destination
 
@@ -126,8 +131,11 @@ class FrictionSurfaceRouter(SurfaceRouter):
             ncols = max(1, int(np.ceil(bbox.width_deg / resolution_deg)))
             data = np.full((nrows, ncols), np.nan, dtype=np.float32)
             return TravelTimeSurface.from_arrays(
-                data=data, west=bbox.west, north=bbox.north,
-                resolution_deg=resolution_deg, backend=self.name,
+                data=data,
+                west=bbox.west,
+                north=bbox.north,
+                resolution_deg=resolution_deg,
+                backend=self.name,
                 destination=destination,
                 metadata={"mode": mode.value, "friction_source": "none"},
             )
@@ -145,9 +153,7 @@ class FrictionSurfaceRouter(SurfaceRouter):
         sampling = (pixel_size_m, pixel_size_m)
 
         mcp = MCP_Geometric(friction_mcp, sampling=sampling, fully_connected=True)
-        cumulative_costs, _ = mcp.find_costs(
-            starts=[(dest_row, dest_col)]
-        )
+        cumulative_costs, _ = mcp.find_costs(starts=[(dest_row, dest_col)])
         cumulative_costs = cumulative_costs.astype(np.float32)
 
         # Mark unreachable (inf cost) and off-network as NaN
@@ -164,12 +170,14 @@ class FrictionSurfaceRouter(SurfaceRouter):
             destination=destination,
             metadata={
                 "mode": mode.value,
-                "friction_source": str(self._friction_path) if self._friction_path else "uniform",
+                "friction_source": str(self._friction_path)
+                if self._friction_path
+                else "uniform",
                 "speed_kph_override": self._speed_kph_override,
             },
         )
 
-        if abs(src_res - resolution_deg) / resolution_deg > 0.01:
+        if abs(src_res - resolution_deg) / resolution_deg > _RESOLUTION_REL_TOLERANCE:
             surface = surface.resample(resolution_deg)
 
         return surface.clip(bbox)
@@ -189,18 +197,21 @@ class FrictionSurfaceRouter(SurfaceRouter):
         the requested resolution. Otherwise clips the GeoTIFF to the bbox.
         """
         if self._speed_kph_override is not None:
-            return self._uniform_friction(bbox, resolution_deg)
+            return self._uniform_friction(
+                bbox, resolution_deg, self._speed_kph_override
+            )
         return self._load_geotiff_friction(bbox)
 
     def _uniform_friction(
         self,
         bbox: BoundingBox,
         resolution_deg: float,
-    ) -> tuple[np.ndarray, object, float]:
-        """Build a uniform friction raster from a speed override."""
-        from affine import Affine  # noqa: PLC0415
+        speed_kph: float,
+    ) -> tuple[np.ndarray, Affine, float]:
+        """Build a uniform friction raster from a known speed."""
+        from affine import Affine
 
-        speed_m_per_s = self._speed_kph_override * 1000.0 / 3600.0
+        speed_m_per_s = speed_kph * 1000.0 / 3600.0
         # friction = min/m = 1 / (m/s * 60)
         friction_val = np.float32(1.0 / (speed_m_per_s * 60.0))
 
@@ -215,10 +226,10 @@ class FrictionSurfaceRouter(SurfaceRouter):
     def _load_geotiff_friction(
         self,
         bbox: BoundingBox,
-    ) -> tuple[np.ndarray, object, float]:
+    ) -> tuple[np.ndarray, Affine, float]:
         """Load and clip a GeoTIFF friction raster to bbox."""
-        import rasterio  # noqa: PLC0415
-        from rasterio.windows import from_bounds  # noqa: PLC0415
+        import rasterio
+        from rasterio.windows import from_bounds
 
         if self._friction_path is None or not self._friction_path.exists():
             msg = f"Friction raster not found: {self._friction_path}"
@@ -226,7 +237,10 @@ class FrictionSurfaceRouter(SurfaceRouter):
 
         with rasterio.open(self._friction_path) as src:
             window = from_bounds(
-                bbox.west, bbox.south, bbox.east, bbox.north,
+                bbox.west,
+                bbox.south,
+                bbox.east,
+                bbox.north,
                 transform=src.transform,
             )
             data = src.read(1, window=window)
@@ -248,15 +262,13 @@ class FrictionSurfaceRouter(SurfaceRouter):
 def _lonlat_to_rowcol(
     lon: float,
     lat: float,
-    affine: object,
+    affine: Affine,
     shape: tuple[int, int],
 ) -> tuple[int | None, int | None]:
     """Convert geographic (lon, lat) to (row, col) pixel indices.
 
     Returns (None, None) if the point is outside the raster extent.
     """
-    from affine import Affine  # noqa: PLC0415
-
     a = affine
     col = (lon - a.c) / a.a
     row = (lat - a.f) / a.e
