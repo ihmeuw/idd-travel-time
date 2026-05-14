@@ -34,7 +34,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from affine import Affine
@@ -44,6 +44,10 @@ if TYPE_CHECKING:
 
 _WGS84 = "EPSG:4326"
 _NODATA = np.float32(np.nan)
+
+# When resampling, the NaN mask is zoomed as a float array and re-binarised
+# via this threshold — anything > 0.5 of the source pixel is treated as NaN.
+_NAN_RESAMPLE_THRESHOLD: float = 0.5
 
 
 @dataclass
@@ -83,14 +87,17 @@ class BoundingBox:
     def contains_point(self, lat: float, lon: float) -> bool:
         return self.west <= lon <= self.east and self.south <= lat <= self.north
 
-    def to_dict(self) -> dict:
-        return {"west": self.west, "south": self.south,
-                "east": self.east, "north": self.north}
+    def to_dict(self) -> dict[str, float]:
+        return {
+            "west": self.west,
+            "south": self.south,
+            "east": self.east,
+            "north": self.north,
+        }
 
     @classmethod
-    def from_dict(cls, d: dict) -> BoundingBox:
-        return cls(west=d["west"], south=d["south"],
-                   east=d["east"], north=d["north"])
+    def from_dict(cls, d: dict[str, float]) -> BoundingBox:
+        return cls(west=d["west"], south=d["south"], east=d["east"], north=d["north"])
 
     @classmethod
     def from_point(cls, lat: float, lon: float, radius_deg: float) -> BoundingBox:
@@ -128,14 +135,14 @@ class TravelTimeSurface:
         Arbitrary key-value store for provenance (mode, time_context, etc.).
     """
 
-    data: np.ndarray                        # float32, shape (nrows, ncols)
+    data: np.ndarray  # float32, shape (nrows, ncols)
     affine: Affine
     crs: str
     bbox: BoundingBox
     resolution_deg: float
     backend: str
-    destination: tuple[float, float]       # (lat, lon)
-    metadata: dict = field(default_factory=dict)
+    destination: tuple[float, float]  # (lat, lon)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     # ------------------------------------------------------------------
     # Shape helpers
@@ -167,7 +174,7 @@ class TravelTimeSurface:
         backend: str,
         destination: tuple[float, float],
         crs: str = _WGS84,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> TravelTimeSurface:
         """Construct from a data array and geographic corner coordinates.
 
@@ -205,7 +212,7 @@ class TravelTimeSurface:
         The file must have been written by this class (reads JSON sidecar for
         backend / destination / metadata).
         """
-        import rasterio  # noqa: PLC0415
+        import rasterio
 
         p = Path(path)
         with rasterio.open(p) as src:
@@ -222,10 +229,7 @@ class TravelTimeSurface:
 
         # Read sidecar JSON for provenance
         sidecar = p.with_suffix(".json")
-        if sidecar.exists():
-            meta = json.loads(sidecar.read_text())
-        else:
-            meta = {}
+        meta = json.loads(sidecar.read_text()) if sidecar.exists() else {}
 
         backend = meta.pop("backend", "unknown")
         destination_raw = meta.pop("destination", [0.0, 0.0])
@@ -251,8 +255,8 @@ class TravelTimeSurface:
 
         NaN values are written as the nodata value (-9999.0).
         """
-        import rasterio  # noqa: PLC0415
-        from rasterio.crs import CRS  # noqa: PLC0415
+        import rasterio
+        from rasterio.crs import CRS
 
         out = Path(path)
         out.parent.mkdir(parents=True, exist_ok=True)
@@ -298,8 +302,13 @@ class TravelTimeSurface:
         # Convert geo coords to pixel indices (row, col)
         col_start = max(0, int((bbox.west - self.bbox.west) / self.resolution_deg))
         row_start = max(0, int((self.bbox.north - bbox.north) / self.resolution_deg))
-        col_end = min(self.ncols, int(np.ceil((bbox.east - self.bbox.west) / self.resolution_deg)))
-        row_end = min(self.nrows, int(np.ceil((self.bbox.north - bbox.south) / self.resolution_deg)))
+        col_end = min(
+            self.ncols, int(np.ceil((bbox.east - self.bbox.west) / self.resolution_deg))
+        )
+        row_end = min(
+            self.nrows,
+            int(np.ceil((self.bbox.north - bbox.south) / self.resolution_deg)),
+        )
 
         clipped = self.data[row_start:row_end, col_start:col_end]
         new_west = self.bbox.west + col_start * self.resolution_deg
@@ -321,7 +330,7 @@ class TravelTimeSurface:
 
         Useful for comparing surfaces produced at different resolutions.
         """
-        from scipy.ndimage import zoom  # noqa: PLC0415
+        from scipy.ndimage import zoom
 
         factor = self.resolution_deg / resolution_deg
         resampled = zoom(
@@ -330,7 +339,10 @@ class TravelTimeSurface:
             order=1,
         ).astype(np.float32)
         # Restore NaN mask
-        nan_mask = zoom(np.isnan(self.data).astype(np.float32), factor, order=0) > 0.5
+        nan_mask = (
+            zoom(np.isnan(self.data).astype(np.float32), factor, order=0)
+            > _NAN_RESAMPLE_THRESHOLD
+        )
         resampled[nan_mask] = np.nan
 
         return TravelTimeSurface.from_arrays(
@@ -356,13 +368,20 @@ class TravelTimeSurface:
         valid = ~np.isnan(self.data)
         return valid & (self.data <= minutes)
 
-    def summary_stats(self) -> dict:
+    def summary_stats(self) -> dict[str, Any]:
         """Return descriptive statistics over valid (non-NaN) pixels."""
         valid = self.data[~np.isnan(self.data)]
         if valid.size == 0:
-            return {"count": 0, "min": None, "max": None,
-                    "mean": None, "median": None, "p25": None, "p75": None,
-                    "nan_fraction": 1.0}
+            return {
+                "count": 0,
+                "min": None,
+                "max": None,
+                "mean": None,
+                "median": None,
+                "p25": None,
+                "p75": None,
+                "nan_fraction": 1.0,
+            }
         return {
             "count": int(valid.size),
             "min": float(np.min(valid)),
@@ -401,8 +420,8 @@ class TravelTimeSurface:
         Only valid (non-NaN) pixels are included.  Useful for joining to
         population grids or plotting with geopandas.
         """
-        import geopandas as gpd  # noqa: PLC0415
-        from shapely.geometry import Point  # noqa: PLC0415
+        import geopandas as gpd
+        from shapely.geometry import Point
 
         lats, lons = self.pixel_coords()
         mask = ~np.isnan(self.data)
@@ -410,7 +429,9 @@ class TravelTimeSurface:
         valid_lons = lons[mask]
         valid_times = self.data[mask]
 
-        geometries = [Point(lon, lat) for lon, lat in zip(valid_lons, valid_lats)]
+        geometries = [
+            Point(lon, lat) for lon, lat in zip(valid_lons, valid_lats, strict=False)
+        ]
         return gpd.GeoDataFrame(
             {"travel_time_min": valid_times.astype(np.float32)},
             geometry=geometries,

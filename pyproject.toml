@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Travel-time isochrones from arbitrary origins, globally, including informal-transit cities"
 authors = [{name = "Bobby Reiner", email = "bcreiner@uw.edu"}]
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<4"
 dependencies = [
     "numpy (>=2.0.0,<3.0.0)",
     "pandas (>=2.0.0,<3.0.0)",
@@ -21,6 +21,7 @@ dependencies = [
     "requests (>=2.31.0,<3.0.0)",
     "rasterio (>=1.3.0,<2.0.0)",
     "scikit-image (>=0.22.0,<1.0.0)",
+    "scikit-learn (>=1.4.0,<2.0.0)",
     "affine (>=2.4.0,<3.0.0)",
 ]
 
@@ -55,10 +56,17 @@ ignore = [
     "D",        # docstrings — too strict
     "E501",     # line length — autoformatted
     "RET505",   # else after return
+    "TC001",    # typing-only first-party import — not worth the TYPE_CHECKING dance
+    "TC003",    # typing-only stdlib import — same
+    "RUF001",   # ambiguous unicode — we don't intentionally use confusables
 ]
+
+[tool.ruff.lint.pylint]
+max-args = 10
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101", "ARG", "S105"]
+"src/idd_travel_time/run_isochrone.py" = ["PLR0913"]  # CLI: @click.option decorators count as args
 
 [tool.mypy]
 strict = true

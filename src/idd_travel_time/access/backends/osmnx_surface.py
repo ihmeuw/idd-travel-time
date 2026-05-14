@@ -9,7 +9,7 @@ Algorithm
 4. Run single-source Dijkstra from the destination node → travel time
    in seconds to every reachable node (no cutoff).
 5. Build a KD-tree over node (lat, lon) positions.
-6. For every grid cell centre in ``bbox`` × ``resolution_deg``, find
+6. For every grid cell centre in ``bbox`` * ``resolution_deg``, find
    its nearest network node and assign that node's travel time.
 7. Return a TravelTimeSurface (minutes, float32, NaN = unreachable).
 
@@ -24,7 +24,7 @@ Graph guard buffer
 The graph must extend beyond ``bbox`` by at least
 ``speed_kph / 60 * max_expected_minutes * 1.2`` km to ensure paths
 that enter and leave the bbox are captured correctly.  Default guard is
-``speed × 60 min × 1.2``, capped at 25 km.
+``speed * 60 min * 1.2``, capped at 25 km.
 """
 
 from __future__ import annotations
@@ -32,9 +32,9 @@ from __future__ import annotations
 import math
 from typing import TYPE_CHECKING
 
+import networkx as nx
 import numpy as np
 import osmnx as ox
-import networkx as nx
 
 from idd_travel_time.access.surface import BoundingBox, TravelTimeSurface
 from idd_travel_time.access.surface_router import SurfaceRouter
@@ -42,12 +42,13 @@ from idd_travel_time.routers._helpers import effective_speed_kph
 
 if TYPE_CHECKING:
     from idd_travel_time.constants import TransportMode
+    from idd_travel_time.io.graph_cache import GraphCache
     from idd_travel_time.models import TransitProfile
 
 _WGS84 = "EPSG:4326"
 _MAX_GUARD_KM: float = 25.0
 _GUARD_FACTOR: float = 1.2
-_MAX_SNAP_DIST_M: float = 500.0   # warn if destination snaps > this far
+_MAX_SNAP_DIST_M: float = 500.0  # warn if destination snaps > this far
 
 
 class OsmnxSurfaceRouter(SurfaceRouter):
@@ -65,13 +66,16 @@ class OsmnxSurfaceRouter(SurfaceRouter):
     def __init__(
         self,
         network_type: str = "all",
-        graph_cache: object | None = None,
+        graph_cache: GraphCache | None = None,
     ) -> None:
         self._network_type = network_type
         if graph_cache is not None:
-            self._cache = graph_cache
+            self._cache: GraphCache | None = graph_cache
         else:
-            from idd_travel_time.io.graph_cache import default_cache_from_env  # noqa: PLC0415
+            from idd_travel_time.io.graph_cache import (
+                default_cache_from_env,
+            )
+
             self._cache = default_cache_from_env()
 
     @property
@@ -88,8 +92,7 @@ class OsmnxSurfaceRouter(SurfaceRouter):
         transit_profile: TransitProfile | None = None,
     ) -> TravelTimeSurface:
         """Compute travel-time surface via Dijkstra on OSM street graph."""
-        from idd_travel_time.models import TravelTimeRequest  # noqa: PLC0415
-        from idd_travel_time.constants import TimeContext  # noqa: PLC0415
+        from idd_travel_time.models import TravelTimeRequest
 
         dest_lat, dest_lon = destination
 
@@ -110,18 +113,17 @@ class OsmnxSurfaceRouter(SurfaceRouter):
 
         graph = self._get_graph(expanded, dest_lat, dest_lon, guard_km * 1000.0)
 
-        # --- 2. Project to UTM, impute travel times -----------------------
-        graph_proj = ox.project_graph(graph)
-        for _, _, data in graph_proj.edges(data=True):
+        # --- 2. Impute travel times ---------------------------------------
+        for _, _, data in graph.edges(data=True):
             length_m: float = data.get("length", 0.0)
             data["travel_time_s"] = length_m / speed_ms if speed_ms > 0 else math.inf
 
         # --- 3. Snap destination to nearest node --------------------------
-        dest_node = ox.nearest_nodes(graph_proj, dest_lon, dest_lat)
+        dest_node = ox.nearest_nodes(graph, dest_lon, dest_lat)
 
         # --- 4. Single-source Dijkstra (no cutoff) ------------------------
         node_times_s: dict[int, float] = nx.single_source_dijkstra_path_length(
-            graph_proj,
+            graph,
             dest_node,
             weight="travel_time_s",
         )
@@ -134,7 +136,7 @@ class OsmnxSurfaceRouter(SurfaceRouter):
             [node_times_s[n] / 60.0 for n in node_ids], dtype=np.float32
         )  # convert to minutes
 
-        from scipy.spatial import cKDTree  # noqa: PLC0415
+        from scipy.spatial import cKDTree
 
         # KD-tree in (lat, lon) space — good enough for small areas
         node_coords = np.column_stack([node_lats, node_lons])
@@ -189,10 +191,12 @@ class OsmnxSurfaceRouter(SurfaceRouter):
                 network_type=self._network_type,
             )
         return ox.graph_from_bbox(
-            north=expanded_bbox.north,
-            south=expanded_bbox.south,
-            east=expanded_bbox.east,
-            west=expanded_bbox.west,
+            bbox=(
+                expanded_bbox.west,
+                expanded_bbox.south,
+                expanded_bbox.east,
+                expanded_bbox.north,
+            ),
             network_type=self._network_type,
         )
 

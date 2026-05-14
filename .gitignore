@@ -51,6 +51,7 @@ config/*
 *.csv
 data/
 outputs/
+cache/
 
 # notebooks — keep files, ignore output cells
 # (use nbstripout via pre-commit instead of blanket ignore)

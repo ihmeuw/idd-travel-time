@@ -46,6 +46,7 @@ from idd_travel_time.routers.base import Router
 if TYPE_CHECKING:
     from shapely.geometry.base import BaseGeometry
 
+    from idd_travel_time.io.graph_cache import GraphCache
     from idd_travel_time.models import TravelTimeRequest
 
 # Buffer radius added around each reachable node before unioning, in degrees.
@@ -74,14 +75,17 @@ class OsmnxRouter(Router):
     def __init__(
         self,
         network_type: str = "all",
-        graph_cache: object | None = None,
+        graph_cache: GraphCache | None = None,
     ) -> None:
         self._network_type = network_type
 
         if graph_cache is not None:
-            self._cache = graph_cache
+            self._cache: GraphCache | None = graph_cache
         else:
-            from idd_travel_time.io.graph_cache import default_cache_from_env  # noqa: PLC0415
+            from idd_travel_time.io.graph_cache import (
+                default_cache_from_env,
+            )
+
             self._cache = default_cache_from_env()  # None if env var not set
 
     @property
@@ -95,37 +99,29 @@ class OsmnxRouter(Router):
 
         graph = self._get_graph(request, radius_m)
 
-        # Project to UTM for accurate metric edge lengths, then compute
-        # reachable subgraph, then reproject to WGS-84 for output.
-        graph_proj = ox.project_graph(graph)
-        origin_node = ox.nearest_nodes(
-            graph_proj, request.origin_lon, request.origin_lat
-        )
+        origin_node = ox.nearest_nodes(graph, request.origin_lon, request.origin_lat)
         speed_ms = speed_kph / 3.6
         budget_seconds = request.duration_minutes * 60.0
 
-        # Weight edges by travel time in seconds.
-        for _, _, data in graph_proj.edges(data=True):
+        for _, _, data in graph.edges(data=True):
             length_m: float = data.get("length", 0.0)
             data["travel_time"] = length_m / speed_ms if speed_ms > 0 else math.inf
 
         reachable_nodes = nx.single_source_dijkstra_path_length(
-            graph_proj,
+            graph,
             origin_node,
             cutoff=budget_seconds,
             weight="travel_time",
         )
 
         node_geoms = [
-            graph_proj.nodes[n]["geometry"]
-            if "geometry" in graph_proj.nodes[n]
-            else _node_point(graph_proj, n)
+            graph.nodes[n]["geometry"]
+            if "geometry" in graph.nodes[n]
+            else _node_point(graph, n)
             for n in reachable_nodes
         ]
 
-        # Reproject node points back to WGS-84 before building the polygon.
-        node_gdf = gpd.GeoDataFrame(geometry=node_geoms, crs=graph_proj.graph["crs"])
-        node_gdf_wgs = node_gdf.to_crs(_WGS84)
+        node_gdf_wgs = gpd.GeoDataFrame(geometry=node_geoms, crs=_WGS84)
 
         polygon = _alpha_shape_or_convex_hull(node_gdf_wgs, buffer_deg=_NODE_BUFFER_DEG)
         isochrone_gdf = make_isochrone_gdf(polygon, request)
@@ -214,7 +210,7 @@ def _travel_distance_meters(speed_kph: float, duration_minutes: int) -> float:
 
 def _node_point(graph: nx.MultiDiGraph, node_id: int) -> object:
     """Build a Shapely Point from a graph node's x/y attributes."""
-    from shapely.geometry import Point  # noqa: PLC0415
+    from shapely.geometry import Point
 
     data = graph.nodes[node_id]
     return Point(data["x"], data["y"])

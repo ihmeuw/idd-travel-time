@@ -38,7 +38,7 @@ import json
 import shutil
 import tempfile
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import geopandas as gpd
 
@@ -173,7 +173,7 @@ def read_result(result_dir: str | Path) -> TravelTimeResult:
     poi_gdf = _read_gdf(poi_path) if poi_path.exists() else None
 
     # Import here to avoid circular import at module load.
-    from idd_travel_time.models import TravelTimeResult  # noqa: PLC0415
+    from idd_travel_time.models import TravelTimeResult
 
     return TravelTimeResult(
         request=request,
@@ -198,10 +198,10 @@ def _fmt_coord(value: float) -> str:
     return formatted.replace("-", "n")
 
 
-def _build_meta(result: TravelTimeResult) -> dict:
+def _build_meta(result: TravelTimeResult) -> dict[str, Any]:
     """Serialise request + router_name to a JSON-compatible dict."""
     req = result.request
-    meta: dict = {
+    meta: dict[str, Any] = {
         "schema_version": _SCHEMA_VERSION,
         "router_name": result.router_name,
         "request": {
@@ -252,7 +252,7 @@ def _read_gdf(path: Path) -> gpd.GeoDataFrame:
 # ---------------------------------------------------------------------------
 
 
-def _check_schema_version(meta: dict, result_dir: Path) -> None:
+def _check_schema_version(meta: dict[str, Any], result_dir: Path) -> None:
     version = meta.get("schema_version")
     if version != _SCHEMA_VERSION:
         msg = (
@@ -263,15 +263,15 @@ def _check_schema_version(meta: dict, result_dir: Path) -> None:
         raise ValueError(msg)
 
 
-def _request_from_meta(meta: dict) -> TravelTimeRequest:
+def _request_from_meta(meta: dict[str, Any]) -> TravelTimeRequest:
     """Reconstruct a TravelTimeRequest from the meta.json request block."""
-    from idd_travel_time.constants import (  # noqa: PLC0415
+    from idd_travel_time.constants import (
         TimeContext,
         TransitCoverage,
         TransportMode,
         VizLayer,
     )
-    from idd_travel_time.models import (  # noqa: PLC0415
+    from idd_travel_time.models import (
         TransitProfile,
         TravelTimeRequest,
     )
@@ -282,7 +282,7 @@ def _request_from_meta(meta: dict) -> TravelTimeRequest:
     if r["transit_profile"] is not None:
         tp = r["transit_profile"]
         transit_profile = TransitProfile(
-            typical_speed_kph=tuple(tp["typical_speed_kph"]),  # type: ignore[arg-type]
+            typical_speed_kph=tuple(tp["typical_speed_kph"]),
             coverage=TransitCoverage(tp["coverage"]),
             time_context=TimeContext(tp["time_context"]),
             mode_name=tp["mode_name"],

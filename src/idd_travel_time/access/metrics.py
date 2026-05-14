@@ -34,6 +34,7 @@ Any extra columns are preserved and ignored.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -43,6 +44,14 @@ if TYPE_CHECKING:
     import geopandas as gpd
 
     from idd_travel_time.access.surface import TravelTimeSurface
+
+# Minimum number of valid observation/prediction pairs for correlation
+# coefficients to be defined.
+_MIN_PAIRS_FOR_CORRELATION: int = 2
+
+# Travel-time thresholds (minutes) used in coverage / agreement metrics.
+_COVERAGE_THRESHOLD_30_MIN: float = 30.0
+_COVERAGE_THRESHOLD_60_MIN: float = 60.0
 
 
 # ---------------------------------------------------------------------------
@@ -78,8 +87,7 @@ def score_at_points(
     coverage_error_30, coverage_error_60 (fraction of points where the
     predicted threshold differs from observed threshold at 30 and 60 min).
     """
-    import geopandas as gpd  # noqa: PLC0415
-    from scipy.stats import pearsonr, spearmanr  # noqa: PLC0415
+    from scipy.stats import pearsonr, spearmanr
 
     gt = ground_truth.copy()
     if split is not None and "split" in gt.columns:
@@ -91,19 +99,19 @@ def score_at_points(
     # Extract predicted travel time at each observation point
     predicted = _sample_surface_at_points(surface, gt)
     valid = ~np.isnan(predicted)
-    if valid.sum() < 2:
+    if valid.sum() < _MIN_PAIRS_FOR_CORRELATION:
         return _empty_scores()
 
-    obs = gt[obs_col].values[valid].astype(np.float64)
+    obs = gt[obs_col].to_numpy()[valid].astype(np.float64)
     pred = predicted[valid].astype(np.float64)
     residuals = pred - obs
 
     n = int(valid.sum())
     mae = float(np.mean(np.abs(residuals)))
-    rmse = float(np.sqrt(np.mean(residuals ** 2)))
+    rmse = float(np.sqrt(np.mean(residuals**2)))
     bias = float(np.mean(residuals))
 
-    ss_res = np.sum(residuals ** 2)
+    ss_res = np.sum(residuals**2)
     ss_tot = np.sum((obs - obs.mean()) ** 2)
     r2 = float(1.0 - ss_res / ss_tot) if ss_tot > 0 else float("nan")
 
@@ -139,14 +147,15 @@ def compare_surfaces(
     dict with: n_pixels, mean_diff (a - b), abs_mean_diff, rmsd,
     pearson_r, agreement_30min, agreement_60min.
     """
-    from scipy.stats import pearsonr  # noqa: PLC0415
+    from scipy.stats import pearsonr
 
     res = min(surface_a.resolution_deg, surface_b.resolution_deg)
     a = surface_a.resample(res)
     b = surface_b.resample(res)
 
     # Clip to intersection
-    from idd_travel_time.access.surface import BoundingBox  # noqa: PLC0415
+    from idd_travel_time.access.surface import BoundingBox
+
     common = BoundingBox(
         west=max(a.bbox.west, b.bbox.west),
         south=max(a.bbox.south, b.bbox.south),
@@ -163,10 +172,16 @@ def compare_surfaces(
     db = b.data[:min_rows, :min_cols]
 
     valid = ~(np.isnan(da) | np.isnan(db))
-    if valid.sum() < 2:
-        return {"n_pixels": 0, "mean_diff": float("nan"), "abs_mean_diff": float("nan"),
-                "rmsd": float("nan"), "pearson_r": float("nan"),
-                "agreement_30min": float("nan"), "agreement_60min": float("nan")}
+    if valid.sum() < _MIN_PAIRS_FOR_CORRELATION:
+        return {
+            "n_pixels": 0,
+            "mean_diff": float("nan"),
+            "abs_mean_diff": float("nan"),
+            "rmsd": float("nan"),
+            "pearson_r": float("nan"),
+            "agreement_30min": float("nan"),
+            "agreement_60min": float("nan"),
+        }
 
     fa = da[valid].astype(np.float64)
     fb = db[valid].astype(np.float64)
@@ -174,14 +189,22 @@ def compare_surfaces(
 
     pearson_r, _ = pearsonr(fa, fb)
 
-    agree_30 = float(np.mean((fa <= 30.0) == (fb <= 30.0)))
-    agree_60 = float(np.mean((fa <= 60.0) == (fb <= 60.0)))
+    agree_30 = float(
+        np.mean(
+            (fa <= _COVERAGE_THRESHOLD_30_MIN) == (fb <= _COVERAGE_THRESHOLD_30_MIN)
+        )
+    )
+    agree_60 = float(
+        np.mean(
+            (fa <= _COVERAGE_THRESHOLD_60_MIN) == (fb <= _COVERAGE_THRESHOLD_60_MIN)
+        )
+    )
 
     return {
         "n_pixels": int(valid.sum()),
         "mean_diff": float(np.mean(diff)),
         "abs_mean_diff": float(np.mean(np.abs(diff))),
-        "rmsd": float(np.sqrt(np.mean(diff ** 2))),
+        "rmsd": float(np.sqrt(np.mean(diff**2))),
         "pearson_r": float(pearson_r),
         "agreement_30min": agree_30,
         "agreement_60min": agree_60,
@@ -214,18 +237,24 @@ def benchmark_table(
     pd.DataFrame with one row per (backend, split) combination.
     """
     rows = []
-    eval_splits: list[str | None] = splits if splits else [None]
+    eval_splits: Sequence[str | None]
+    if splits:  # noqa: SIM108  # ternary trips mypy's invariance check on [None]
+        eval_splits = splits
+    else:
+        eval_splits = [None]
 
     for name, surface in surfaces.items():
         for split in eval_splits:
             scores = score_at_points(
                 surface, ground_truth, obs_col=obs_col, split=split
             )
-            rows.append({
-                "backend": name,
-                "split": split or "all",
-                **scores,
-            })
+            rows.append(
+                {
+                    "backend": name,
+                    "split": split or "all",
+                    **scores,
+                }
+            )
 
     return pd.DataFrame(rows).set_index(["backend", "split"])
 
@@ -243,7 +272,7 @@ def residual_geodataframe(
     gt = ground_truth.copy()
     predicted = _sample_surface_at_points(surface, gt)
     gt["predicted_min"] = predicted
-    gt["residual_min"] = predicted - gt[obs_col].values
+    gt["residual_min"] = predicted - gt[obs_col].to_numpy()
     gt["abs_residual_min"] = np.abs(gt["residual_min"])
     gt["backend"] = surface.backend
     return gt
@@ -274,8 +303,7 @@ def _sample_surface_at_points(
     row_i = np.floor(row_f).astype(int)
 
     in_bounds = (
-        (row_i >= 0) & (row_i < surface.nrows) &
-        (col_i >= 0) & (col_i < surface.ncols)
+        (row_i >= 0) & (row_i < surface.nrows) & (col_i >= 0) & (col_i < surface.ncols)
     )
 
     result = np.full(len(gdf), np.nan, dtype=np.float32)
@@ -298,7 +326,7 @@ def _coverage_error(
     return float(np.mean(obs_within != pred_within))
 
 
-def _empty_scores() -> dict:
+def _empty_scores() -> dict[str, float]:
     return {
         "n": 0,
         "mae": float("nan"),
