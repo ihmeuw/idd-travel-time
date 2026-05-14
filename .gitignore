@@ -1,0 +1,56 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Test / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# NFS sillyrename tombstones
+.nfs*
+
+# mypy / ruff caches
+.mypy_cache/
+.ruff_cache/
+
+# Secrets — never commit. `.env.example` is the documented template.
+.env
+.env.*
+!.env.example
+
+# Generated config — keep the directory, ignore its contents
+config/*
+!config/.gitkeep
+
+# Repo-specific data and outputs
+*.parquet
+*.csv
+data/
+outputs/
+
+# notebooks — keep files, ignore output cells
+# (use nbstripout via pre-commit instead of blanket ignore)

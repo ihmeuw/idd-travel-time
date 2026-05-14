@@ -1,0 +1,19 @@
+name: Log deliverable tag
+on:
+  push:
+    tags: ['manuscript_*', 'revision_*', 'submission_*']
+jobs:
+  log:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Append to DELIVERABLES.md
+        run: |
+          echo "## ${{ github.ref_name }}" >> DELIVERABLES.md
+          echo "- Commit: ${{ github.sha }}" >> DELIVERABLES.md
+          echo "- Date: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> DELIVERABLES.md
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add DELIVERABLES.md
+          git commit -m "Log deliverable tag ${{ github.ref_name }}"
+          git push
