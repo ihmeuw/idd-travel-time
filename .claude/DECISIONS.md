@@ -2,7 +2,109 @@
 
 <!-- Append-only. Never delete or overwrite entries. -->
 
-## 2026-05-06: Tiling deferred — single-city focus for proof-of-principle
+## 2026-05-14: Backends require live-data smoke tests, not just mocked unit tests
+**Decision:** Every router / surface-router backend (Osmnx, ORS, MAP friction,
+ensemble) must have a live-data smoke test exercised before any "this works"
+claim. Mocked unit tests are necessary but not sufficient.
+**Why:** During the Nairobi smoke test (notebook 10) on 2026-05-14, three
+real bugs surfaced that all 348 mocked tests had passed cleanly:
+(1) `ox.graph_from_bbox` 1.x → 2.x signature change (bbox-tuple, not
+north/south/east/west kwargs); (2) `ox.nearest_nodes` receiving WGS-84
+coordinates against a UTM-projected graph (silent wrong-answer with
+travel times ~3× too high); (3) missing `scikit-learn` dep that osmnx
+2.x now requires for haversine `nearest_nodes`. None of these were
+catchable by mocking — they only emerge when the backend actually talks
+to the real upstream library / live API.
+**Revisit if:** Library scope shifts so that all backends are mock-only
+(unlikely — backends only exist to talk to live external sources).
+
+## 2026-05-14: Notebook 10 (Nairobi walking) is the proof-of-principle gate
+**Decision:** `notebooks/10_travel_time_surface.ipynb` is the canonical
+live-data smoke test for `OsmnxSurfaceRouter` and, by extension, the
+access layer's Dijkstra + KD-tree + raster pipeline.
+**Why:** A real bbox, a real destination (Kenyatta National Hospital), a
+real Overpass download, and concrete sanity-checkable outputs (min near 0,
+max ~ half-diagonal × meander / walking-speed). Anything wrong with edge
+weights, projection handling, or grid assignment shows up as obviously
+wrong numbers.
+**Revisit if:** A faster or cheaper integration test replaces it, or the
+access layer is rewritten such that this notebook no longer covers the
+relevant code paths.
+
+## 2026-05-14: ORS smoke test parked — no API key
+**Decision:** `OpenRouteServiceRouter` is not currently verifiable against
+live ORS — `ORS_API_KEY` is not set in this environment.
+**Why:** ORS requires a free-tier key (500 req/day at openrouteservice.org)
+or paid tier. No key currently provisioned for this repo / user.
+**Revisit if:** A key is obtained, or ORS is removed as a supported
+backend. Until then, treat `OpenRouteServiceRouter` as "implemented per
+spec but not integration-verified."
+
+## 2026-05-14: Friction-GeoTIFF smoke test parked — no source friction raster
+**Decision:** `FrictionSurfaceRouter`'s GeoTIFF path is not currently
+exercisable against a real raster. The `speed_kph_override` path is
+verified via the Nairobi ensemble run.
+**Why:** The IHME cluster's `/snfs1/.../access2/mean/2019_06_10/synoptic/`
+holds the Weiss 2018 *travel-time-to-cities* product (output, in minutes),
+not the source friction raster (input, in min/m). No MAP friction raster
+is currently available on-cluster or in the project tree. The library is
+designed to consume a friction raster; consuming an accessibility raster
+would be a different operation.
+**Revisit if:** A MAP friction raster is downloaded to a known path, or
+the team builds its own friction surface from OSM + speed assumptions
+(planned).
+
+## 2026-05-14: Origin point not guaranteed inside isochrone polygon
+**Decision:** Known limitation: `OsmnxRouter` builds the isochrone polygon
+by buffering each reachable road node by `_NODE_BUFFER_DEG ≈ 50 m` and
+unioning. If the origin point sits in a 50-m gap between road nodes
+(e.g. inside a building), the literal origin lat/lon may fall outside
+the returned polygon even though the origin is the start of the
+isochrone.
+**Why:** The polygon represents the road-network-reachable subset, not
+"everything within X metres of road." Surfaced during the 2026-05-14
+Nairobi smoke test: KNH (-1.3006, 36.8073) → origin-in-polygon == False
+despite a sensible 5.5 km² 30-min walking polygon centred at (-1.298,
+36.808).
+**Revisit if:** Users start filing this as a bug, or the polygon shape
+matters for downstream area calculations. Cheap fix: snap-or-buffer the
+origin into the polygon as a post-processing step. Real fix: switch to
+alpha-shape with origin included, or use a finer node buffer.
+
+## 2026-05-14: Strict ruff `ALL` keeps research-friendly per-file ignores
+**Decision:** `[tool.ruff.lint] select = ["ALL"]` is the policy, but
+tests/** carries a broad per-file-ignores list (PLR2004, SLF001, FBT,
+SIM117, N806, E741, PD901, RUF003, ERA001, S101, ARG, S105) and the CLI
+entry point ignores PLR0913 (click decorators). Notebooks are excluded
+from ruff entirely (vignettes are illustrative, not production-strict).
+Three "style debate" rules are dropped globally (TC001, TC003, RUF001).
+**Why:** Tests, CLIs, and vignettes legitimately violate rules that make
+sense in src/. Dropping `select = ALL` for the whole repo loses checks
+the src code benefits from; per-file ignores keep the strictness where
+it matters and relax it where the rule is genuinely wrong for the
+context.
+**Revisit if:** A linting rule causes recurring noise across many src
+files (consider promoting it to the global ignore list) or a rule
+currently ignored is being routinely violated in a way that masks real
+bugs.
+
+## 2026-05-14: Mypy strict + targeted overrides for tests and CLI
+**Decision:** `strict = true` globally with two `[[tool.mypy.overrides]]`
+blocks: `tests.*` relaxes `disallow_untyped_defs / _calls / _decorators
+/ incomplete_defs`; `idd_travel_time.run_isochrone` relaxes
+`disallow_untyped_decorators` only (click).
+**Why:** Tests use mocks, fixtures, and `**kwargs` patterns that don't
+type cleanly under strict. The CLI is decorated with `@click.command`
+and `@click.option`, whose returned wrappers don't preserve the
+underlying function signature — strict-typed-decorators noise without
+real value.
+**Revisit if:** Click ships properly-preserving decorator type stubs
+(would let us drop the CLI override), or test code adopts a more
+type-friendly style (would let us drop the tests override).
+
+---
+
+
 **Decision:** No tile-aware surface computation in the v0.1 release; single-city
 bbox is the supported unit.
 **Why:** Proof-of-principle phase. Cross-tile border-load handling adds
