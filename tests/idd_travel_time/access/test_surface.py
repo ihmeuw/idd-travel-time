@@ -3,14 +3,12 @@
 from __future__ import annotations
 
 import json
-import tempfile
 from pathlib import Path
 
 import numpy as np
 import pytest
 
 from idd_travel_time.access.surface import BoundingBox, TravelTimeSurface
-
 
 # ---------------------------------------------------------------------------
 # BoundingBox
@@ -127,8 +125,12 @@ class TestSummaryStats:
     def test_all_nan_surface(self) -> None:
         data = np.full((5, 5), np.nan, dtype=np.float32)
         s = TravelTimeSurface.from_arrays(
-            data=data, west=0.0, north=0.0,
-            resolution_deg=0.01, backend="test", destination=(0.0, 0.0)
+            data=data,
+            west=0.0,
+            north=0.0,
+            resolution_deg=0.01,
+            backend="test",
+            destination=(0.0, 0.0),
         )
         stats = s.summary_stats()
         assert stats["count"] == 0
@@ -137,8 +139,12 @@ class TestSummaryStats:
     def test_coverage_at(self) -> None:
         data = np.arange(100, dtype=np.float32).reshape(10, 10)
         s = TravelTimeSurface.from_arrays(
-            data=data, west=0.0, north=0.0,
-            resolution_deg=0.01, backend="test", destination=(0.0, 0.0)
+            data=data,
+            west=0.0,
+            north=0.0,
+            resolution_deg=0.01,
+            backend="test",
+            destination=(0.0, 0.0),
         )
         # 31 pixels (0–30) out of 100
         assert s.coverage_at(30.0) == pytest.approx(31 / 100)
@@ -242,6 +248,7 @@ class TestPixelCoords:
 class TestToGeoDataFrame:
     def test_returns_geodataframe(self) -> None:
         import geopandas as gpd
+
         s = _make_surface(5, 5, nan_fraction=0.0)
         gdf = s.to_geodataframe()
         assert isinstance(gdf, gpd.GeoDataFrame)
@@ -249,7 +256,7 @@ class TestToGeoDataFrame:
     def test_only_valid_pixels(self) -> None:
         s = _make_surface(5, 5, nan_fraction=0.5)
         gdf = s.to_geodataframe()
-        n_valid = int(~np.isnan(s.data).sum() == gdf.__len__())
+        int(~np.isnan(s.data).sum() == gdf.__len__())
         # all rows are non-NaN
         assert not gdf["travel_time_min"].isna().any()
 

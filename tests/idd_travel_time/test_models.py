@@ -4,9 +4,13 @@ from __future__ import annotations
 
 import pytest
 
-from idd_travel_time.constants import TimeContext, TransitCoverage, TransportMode, VizLayer
+from idd_travel_time.constants import (
+    TimeContext,
+    TransitCoverage,
+    TransportMode,
+    VizLayer,
+)
 from idd_travel_time.models import TransitProfile, TravelTimeRequest
-
 
 # ---------------------------------------------------------------------------
 # TransitProfile
@@ -78,7 +82,9 @@ class TestTransitProfile:
         assert p.coverage is TransitCoverage.ROAD_NETWORK
 
     def test_from_preset_speed_override(self) -> None:
-        p = TransitProfile.from_preset("informal_minibus", typical_speed_kph=(10.0, 20.0))
+        p = TransitProfile.from_preset(
+            "informal_minibus", typical_speed_kph=(10.0, 20.0)
+        )
         assert p.typical_speed_kph == (10.0, 20.0)
         # other fields unchanged
         assert p.coverage is TransitCoverage.ROAD_NETWORK
@@ -111,7 +117,7 @@ class TestTransitProfile:
 
 
 class TestTravelTimeRequest:
-    def _walking_request(self, **kwargs) -> TravelTimeRequest:  # type: ignore[no-untyped-def]
+    def _walking_request(self, **kwargs) -> TravelTimeRequest:
         defaults = {
             "origin_lat": -1.286389,
             "origin_lon": 36.817223,

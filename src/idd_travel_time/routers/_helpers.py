@@ -35,7 +35,7 @@ def make_isochrone_gdf(
     mode          : str
     time_context  : str
     """
-    df = pd.DataFrame(
+    df = pd.DataFrame(  # noqa: PD901  # transient — wrapped as GeoDataFrame on return
         {
             COL_GEOMETRY: [polygon],
             COL_DURATION_MIN: pd.array([request.duration_minutes], dtype="int32"),
@@ -64,7 +64,7 @@ def make_poi_gdf(
         msg = "points, names, and amenity_types must have the same length"
         raise ValueError(msg)
     geometries = [Point(lon, lat) for lon, lat in points]
-    df = pd.DataFrame(
+    df = pd.DataFrame(  # noqa: PD901  # transient — wrapped as GeoDataFrame on return
         {
             COL_GEOMETRY: geometries,
             COL_POI_NAME: pd.array(names, dtype="string"),
@@ -88,7 +88,9 @@ def ors_profile_for_request(request: TravelTimeRequest) -> str:
         One of: ``"foot-walking"``, ``"cycling-regular"``,
         ``"driving-car"``.
     """
-    from idd_travel_time.constants import TransitCoverage, TransportMode  # noqa: PLC0415
+    from idd_travel_time.constants import (
+        TransportMode,
+    )
 
     match request.mode:
         case TransportMode.WALKING:
@@ -114,7 +116,7 @@ def effective_speed_kph(request: TravelTimeRequest) -> float:
     default speed range from constants. For TRANSIT we use the
     TransitProfile midpoint.
     """
-    from idd_travel_time.constants import (  # noqa: PLC0415
+    from idd_travel_time.constants import (
         DEFAULT_CYCLING_SPEED_KPH,
         DEFAULT_DRIVING_SPEED_KPH,
         DEFAULT_WALKING_SPEED_KPH,
@@ -132,7 +134,7 @@ def effective_speed_kph(request: TravelTimeRequest) -> float:
             lo, hi = DEFAULT_DRIVING_SPEED_KPH
             return (lo + hi) / 2.0
         case TransportMode.TRANSIT:
-            assert request.transit_profile is not None  # validated in TravelTimeRequest
+            assert request.transit_profile is not None  # noqa: S101  # validated in TravelTimeRequest.__post_init__
             return request.transit_profile.midpoint_speed_kph
         case _:
             msg = f"Unsupported transport mode: {request.mode}"

@@ -31,11 +31,13 @@ import geopandas as gpd
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.figure import Figure
 
 from idd_travel_time.constants import VizLayer
 
 if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
     from idd_travel_time.models import TravelTimeResult
 
 # ---------------------------------------------------------------------------
@@ -214,7 +216,7 @@ def _project(
 # ---------------------------------------------------------------------------
 
 
-def _draw_isochrone(ax: plt.Axes, iso_proj: gpd.GeoDataFrame) -> None:
+def _draw_isochrone(ax: Axes, iso_proj: gpd.GeoDataFrame) -> None:
     iso_proj.plot(
         ax=ax,
         color=_ISOCHRONE_COLOR,
@@ -225,7 +227,7 @@ def _draw_isochrone(ax: plt.Axes, iso_proj: gpd.GeoDataFrame) -> None:
     )
 
 
-def _draw_network(ax: plt.Axes, net_proj: gpd.GeoDataFrame) -> None:
+def _draw_network(ax: Axes, net_proj: gpd.GeoDataFrame) -> None:
     net_proj.plot(
         ax=ax,
         color=_NETWORK_COLOR,
@@ -235,7 +237,7 @@ def _draw_network(ax: plt.Axes, net_proj: gpd.GeoDataFrame) -> None:
     )
 
 
-def _draw_pois(ax: plt.Axes, poi_proj: gpd.GeoDataFrame) -> None:
+def _draw_pois(ax: Axes, poi_proj: gpd.GeoDataFrame) -> None:
     poi_proj.plot(
         ax=ax,
         color=_POI_COLOR,
@@ -249,17 +251,17 @@ def _draw_pois(ax: plt.Axes, poi_proj: gpd.GeoDataFrame) -> None:
 
 
 def _draw_origin(
-    ax: plt.Axes,
+    ax: Axes,
     result: TravelTimeResult,
     crs_proj: object,
 ) -> None:
     """Plot the origin star marker, reprojected to match the axes CRS."""
-    from shapely.geometry import Point  # noqa: PLC0415
+    from shapely.geometry import Point
 
     lat, lon = result.origin
-    origin_gdf = gpd.GeoDataFrame(
-        geometry=[Point(lon, lat)], crs="EPSG:4326"
-    ).to_crs(crs_proj)
+    origin_gdf = gpd.GeoDataFrame(geometry=[Point(lon, lat)], crs="EPSG:4326").to_crs(
+        crs_proj
+    )
     origin_gdf.plot(
         ax=ax,
         color=_ORIGIN_COLOR,
@@ -269,7 +271,7 @@ def _draw_origin(
     )
 
 
-def _draw_heatmap(ax: plt.Axes, iso_proj: gpd.GeoDataFrame) -> None:
+def _draw_heatmap(ax: Axes, iso_proj: gpd.GeoDataFrame) -> None:
     """Render a 2-D kernel density heatmap of the isochrone polygon."""
     polygon = iso_proj.geometry.iloc[0]
     if polygon.is_empty:
@@ -277,7 +279,7 @@ def _draw_heatmap(ax: plt.Axes, iso_proj: gpd.GeoDataFrame) -> None:
 
     # Sample random points inside the polygon for density estimation.
     try:
-        from shapely.geometry import MultiPolygon  # noqa: PLC0415
+        from shapely.geometry import MultiPolygon
 
         if isinstance(polygon, MultiPolygon):
             polygon = max(polygon.geoms, key=lambda p: p.area)
@@ -285,26 +287,36 @@ def _draw_heatmap(ax: plt.Axes, iso_proj: gpd.GeoDataFrame) -> None:
         minx, miny, maxx, maxy = polygon.bounds
         rng = np.random.default_rng(seed=42)
         n_samples = 2000
-        xs, ys = [], []
-        while len(xs) < n_samples:
+        xs_collected: list[float] = []
+        ys_collected: list[float] = []
+        while len(xs_collected) < n_samples:
             batch_x = rng.uniform(minx, maxx, n_samples)
             batch_y = rng.uniform(miny, maxy, n_samples)
-            from shapely.geometry import Point  # noqa: PLC0415
-            mask = [polygon.contains(Point(x, y)) for x, y in zip(batch_x, batch_y)]
-            xs.extend(batch_x[mask])
-            ys.extend(batch_y[mask])
-        xs = np.array(xs[:n_samples])
-        ys = np.array(ys[:n_samples])
+            from shapely.geometry import Point
+
+            mask = [
+                polygon.contains(Point(x, y))
+                for x, y in zip(batch_x, batch_y, strict=False)
+            ]
+            xs_collected.extend(batch_x[mask])
+            ys_collected.extend(batch_y[mask])
+        xs_arr = np.array(xs_collected[:n_samples])
+        ys_arr = np.array(ys_collected[:n_samples])
 
         ax.hist2d(
-            xs, ys,
+            xs_arr,
+            ys_arr,
             bins=_HEATMAP_BINS,
             cmap=_HEATMAP_CMAP,
             alpha=_HEATMAP_ALPHA,
             zorder=1,
         )
-    except Exception:  # noqa: BLE001
-        pass  # heatmap is optional — never hard-fail on it
+    except Exception as exc:  # noqa: BLE001
+        warnings.warn(
+            f"Static heatmap rendering failed ({exc}); proceeding without it.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -312,17 +324,18 @@ def _draw_heatmap(ax: plt.Axes, iso_proj: gpd.GeoDataFrame) -> None:
 # ---------------------------------------------------------------------------
 
 
-def _add_basemap(ax: plt.Axes, crs_proj: object) -> None:
+def _add_basemap(ax: Axes, crs_proj: object) -> None:
     """Add a tiled basemap via contextily. Silently skips if unavailable."""
     try:
-        import contextily as ctx  # noqa: PLC0415
+        import contextily as ctx
+
         ctx.add_basemap(ax, crs=str(crs_proj), source=ctx.providers.CartoDB.Positron)
     except Exception:  # noqa: BLE001
         # contextily not installed, network unavailable, or tile fetch failed.
         ax.set_facecolor("#f0f0f0")
 
 
-def _style_axes(ax: plt.Axes, result: TravelTimeResult) -> None:
+def _style_axes(ax: Axes, result: TravelTimeResult) -> None:
     req = result.request
     title = (
         f"{req.duration_minutes}-min {req.mode.value} isochrone  "
@@ -334,27 +347,43 @@ def _style_axes(ax: plt.Axes, result: TravelTimeResult) -> None:
 
 
 def _add_legend(
-    ax: plt.Axes,
+    ax: Axes,
     active_layers: set[VizLayer],
-    result: TravelTimeResult,
+    result: TravelTimeResult,  # noqa: ARG001  # reserved for future legend annotations
 ) -> None:
     handles = []
     if VizLayer.ISOCHRONE in active_layers:
-        handles.append(mpatches.Patch(
-            facecolor=_ISOCHRONE_COLOR, alpha=0.6,
-            edgecolor=_ISOCHRONE_EDGE_COLOR, label="Reachable area",
-        ))
+        handles.append(
+            mpatches.Patch(
+                facecolor=_ISOCHRONE_COLOR,
+                alpha=0.6,
+                edgecolor=_ISOCHRONE_EDGE_COLOR,
+                label="Reachable area",
+            )
+        )
     if VizLayer.NETWORK in active_layers:
-        handles.append(mpatches.Patch(
-            facecolor=_NETWORK_COLOR, alpha=0.8, label="Road network",
-        ))
+        handles.append(
+            mpatches.Patch(
+                facecolor=_NETWORK_COLOR,
+                alpha=0.8,
+                label="Road network",
+            )
+        )
     if VizLayer.POI_SCATTER in active_layers:
-        handles.append(mpatches.Patch(
-            facecolor=_POI_COLOR, alpha=0.8, label="Places of interest",
-        ))
-    handles.append(mpatches.Patch(
-        facecolor=_ORIGIN_COLOR, alpha=0.9, label="Origin",
-    ))
+        handles.append(
+            mpatches.Patch(
+                facecolor=_POI_COLOR,
+                alpha=0.8,
+                label="Places of interest",
+            )
+        )
+    handles.append(
+        mpatches.Patch(
+            facecolor=_ORIGIN_COLOR,
+            alpha=0.9,
+            label="Origin",
+        )
+    )
     if handles:
         ax.legend(
             handles=handles,

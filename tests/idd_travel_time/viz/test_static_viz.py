@@ -6,7 +6,6 @@ import tempfile
 from pathlib import Path
 
 import geopandas as gpd
-import pytest
 from matplotlib.figure import Figure
 from shapely.geometry import LineString, Point, Polygon
 
@@ -22,11 +21,15 @@ from idd_travel_time.viz.static_viz import (
 # Fixtures
 # ---------------------------------------------------------------------------
 
-_SQUARE = Polygon([
-    (36.80, -1.30), (36.82, -1.30),
-    (36.82, -1.28), (36.80, -1.28),
-    (36.80, -1.30),
-])
+_SQUARE = Polygon(
+    [
+        (36.80, -1.30),
+        (36.82, -1.30),
+        (36.82, -1.28),
+        (36.80, -1.28),
+        (36.80, -1.30),
+    ]
+)
 
 _WALKING_REQUEST = TravelTimeRequest(
     origin_lat=-1.286389,
@@ -41,8 +44,12 @@ def _make_result(
     pois: bool = False,
 ) -> TravelTimeResult:
     iso = gpd.GeoDataFrame(
-        {"geometry": [_SQUARE], "duration_min": [30],
-         "mode": ["walking"], "time_context": ["off_peak"]},
+        {
+            "geometry": [_SQUARE],
+            "duration_min": [30],
+            "mode": ["walking"],
+            "time_context": ["off_peak"],
+        },
         crs="EPSG:4326",
     )
     net = None
@@ -54,8 +61,11 @@ def _make_result(
     poi = None
     if pois:
         poi = gpd.GeoDataFrame(
-            {"geometry": [Point(36.812, -1.288)],
-             "name": ["Hospital"], "amenity": ["hospital"]},
+            {
+                "geometry": [Point(36.812, -1.288)],
+                "name": ["Hospital"],
+                "amenity": ["hospital"],
+            },
             crs="EPSG:4326",
         )
     return TravelTimeResult(
@@ -209,5 +219,6 @@ class TestSaveStatic:
 
 def test_render_static_importable_from_viz() -> None:
     from idd_travel_time import viz
+
     assert hasattr(viz, "render_static")
     assert hasattr(viz, "save_static")

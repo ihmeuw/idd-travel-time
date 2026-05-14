@@ -10,8 +10,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from idd_travel_time.locations.geocode import (
-    GeocodingError,
     GeocodeCache,
+    GeocodingError,
     _cache_key,
     geocode,
     geocode_many,
@@ -26,7 +26,9 @@ def _mock_nominatim(lat: float = -1.3006, lon: float = 36.8073) -> MagicMock:
     """Return a mock requests.get that simulates a successful Nominatim hit."""
     resp = MagicMock()
     resp.raise_for_status = MagicMock()
-    resp.json.return_value = [{"lat": str(lat), "lon": str(lon), "display_name": "Test"}]
+    resp.json.return_value = [
+        {"lat": str(lat), "lon": str(lon), "display_name": "Test"}
+    ]
     return resp
 
 
@@ -57,7 +59,9 @@ class TestCacheKey:
         assert k1 != k2
 
     def test_strips_whitespace(self) -> None:
-        assert _cache_key("  Nairobi  ", None, "en") == _cache_key("nairobi", None, "en")
+        assert _cache_key("  Nairobi  ", None, "en") == _cache_key(
+            "nairobi", None, "en"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -102,7 +106,8 @@ class TestGeocodeCache:
         # No .tmp file left over
         assert not (tmp_path / "cache.tmp").exists()
         loaded = json.loads(path.read_text())
-        assert "k1" in loaded and "k2" in loaded
+        assert "k1" in loaded
+        assert "k2" in loaded
 
 
 # ---------------------------------------------------------------------------
@@ -129,10 +134,14 @@ class TestGeocode:
 
     def test_network_error_raises_geocoding_error(self) -> None:
         import requests as req
-        from idd_travel_time.locations.geocode import GeocodeCache  # noqa: PLC0415
+
+        from idd_travel_time.locations.geocode import GeocodeCache
+
         fresh = GeocodeCache()
-        with patch("idd_travel_time.locations.geocode._get_cache", return_value=fresh), \
-             patch("requests.get", side_effect=req.RequestException("timeout")):
+        with (
+            patch("idd_travel_time.locations.geocode._get_cache", return_value=fresh),
+            patch("requests.get", side_effect=req.RequestException("timeout")),
+        ):
             with pytest.raises(GeocodingError, match="Nominatim request failed"):
                 geocode("anywhere_nw_error_unique")
 
@@ -152,11 +161,16 @@ class TestGeocode:
 
     def test_cache_hit_skips_request(self) -> None:
         """Second call for the same place must not hit the network."""
-        from idd_travel_time.locations.geocode import GeocodeCache  # noqa: PLC0415
+        from idd_travel_time.locations.geocode import GeocodeCache
+
         fresh_cache = GeocodeCache()
         mock_get = MagicMock(return_value=_mock_nominatim())
-        with patch("idd_travel_time.locations.geocode._get_cache", return_value=fresh_cache), \
-             patch("requests.get", mock_get):
+        with (
+            patch(
+                "idd_travel_time.locations.geocode._get_cache", return_value=fresh_cache
+            ),
+            patch("requests.get", mock_get),
+        ):
             geocode("CacheTestPlace_unique_9999x")
             geocode("CacheTestPlace_unique_9999x")
         assert mock_get.call_count == 1
@@ -202,10 +216,13 @@ class TestGeocodeMany:
 
     def test_on_error_raise_propagates(self) -> None:
         import requests as req
+
         def _side_effect(url, params=None, headers=None, timeout=None):
             if params and "bad" in params.get("q", ""):
-                raise req.RequestException("simulated network error")
+                msg = "simulated network error"
+                raise req.RequestException(msg)
             return _mock_nominatim()
+
         with patch("requests.get", side_effect=_side_effect):
             with pytest.raises(GeocodingError):
                 geocode_many(["good", "bad_xyzzy_place"], on_error="raise")
@@ -288,6 +305,7 @@ class TestFromPlace:
 class TestCliPlace:
     def test_place_flag_accepted(self, tmp_path: Path) -> None:
         from click.testing import CliRunner
+
         from idd_travel_time.run_isochrone import main
 
         out = tmp_path / "map.html"
@@ -298,47 +316,82 @@ class TestCliPlace:
         def _fake_compute(request, *, router=None):
             import geopandas as gpd
             from shapely.geometry import Polygon
+
             from idd_travel_time.models import TravelTimeResult
+
             sq = Polygon([(-0.01, -0.01), (0.01, -0.01), (0.01, 0.01), (-0.01, 0.01)])
             iso = gpd.GeoDataFrame(
-                {"geometry": [sq], "duration_min": [30], "mode": ["walking"],
-                 "time_context": ["off_peak"]}, crs="EPSG:4326"
+                {
+                    "geometry": [sq],
+                    "duration_min": [30],
+                    "mode": ["walking"],
+                    "time_context": ["off_peak"],
+                },
+                crs="EPSG:4326",
             )
-            return TravelTimeResult(request=request, isochrone_gdf=iso,
-                                    network_gdf=None, poi_gdf=None, router_name="mock")
+            return TravelTimeResult(
+                request=request,
+                isochrone_gdf=iso,
+                network_gdf=None,
+                poi_gdf=None,
+                router_name="mock",
+            )
 
         runner = CliRunner()
-        with patch("idd_travel_time.locations.geocode.geocode", _fake_geocode), \
-             patch("idd_travel_time.run_isochrone.compute", _fake_compute), \
-             patch("idd_travel_time.run_isochrone.save_map", return_value=out):
-            result = runner.invoke(main, [
-                "--place", "Kenyatta National Hospital",
-                "--mode", "walking",
-                "--output", str(out),
-            ])
+        with (
+            patch("idd_travel_time.locations.geocode.geocode", _fake_geocode),
+            patch("idd_travel_time.run_isochrone.compute", _fake_compute),
+            patch("idd_travel_time.run_isochrone.save_map", return_value=out),
+        ):
+            result = runner.invoke(
+                main,
+                [
+                    "--place",
+                    "Kenyatta National Hospital",
+                    "--mode",
+                    "walking",
+                    "--output",
+                    str(out),
+                ],
+            )
         assert result.exit_code == 0, result.output
 
     def test_place_and_lat_mutually_exclusive(self, tmp_path: Path) -> None:
         from click.testing import CliRunner
+
         from idd_travel_time.run_isochrone import main
 
         runner = CliRunner()
-        result = runner.invoke(main, [
-            "--place", "Nairobi",
-            "--lat", "-1.2864",
-            "--lon", "36.8172",
-            "--mode", "walking",
-            "--output", str(tmp_path / "map.html"),
-        ])
+        result = runner.invoke(
+            main,
+            [
+                "--place",
+                "Nairobi",
+                "--lat",
+                "-1.2864",
+                "--lon",
+                "36.8172",
+                "--mode",
+                "walking",
+                "--output",
+                str(tmp_path / "map.html"),
+            ],
+        )
         assert result.exit_code != 0
 
     def test_neither_place_nor_lat_fails(self, tmp_path: Path) -> None:
         from click.testing import CliRunner
+
         from idd_travel_time.run_isochrone import main
 
         runner = CliRunner()
-        result = runner.invoke(main, [
-            "--mode", "walking",
-            "--output", str(tmp_path / "map.html"),
-        ])
+        result = runner.invoke(
+            main,
+            [
+                "--mode",
+                "walking",
+                "--output",
+                str(tmp_path / "map.html"),
+            ],
+        )
         assert result.exit_code != 0

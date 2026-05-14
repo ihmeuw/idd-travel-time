@@ -2,17 +2,17 @@
 
 from __future__ import annotations
 
-import tempfile
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import geopandas as gpd
 import numpy as np
 import pytest
-from shapely.geometry import Point
 
-from idd_travel_time.access.surface import BoundingBox, TravelTimeSurface
-from idd_travel_time.access.surface_router import SurfaceRouter
+from idd_travel_time.access.benchmark import (
+    BenchmarkResult,
+    make_synthetic_ground_truth,
+    run_benchmark,
+)
 from idd_travel_time.access.ensemble import EnsembleSurfaceRouter
 from idd_travel_time.access.metrics import (
     benchmark_table,
@@ -20,11 +20,8 @@ from idd_travel_time.access.metrics import (
     residual_geodataframe,
     score_at_points,
 )
-from idd_travel_time.access.benchmark import (
-    BenchmarkResult,
-    make_synthetic_ground_truth,
-    run_benchmark,
-)
+from idd_travel_time.access.surface import BoundingBox, TravelTimeSurface
+from idd_travel_time.access.surface_router import SurfaceRouter
 from idd_travel_time.constants import TransportMode
 
 # ---------------------------------------------------------------------------
@@ -53,7 +50,8 @@ def _make_surface(
         data.ravel()[:n] = np.nan
     return TravelTimeSurface.from_arrays(
         data=data,
-        west=_BBOX.west, north=_BBOX.north,
+        west=_BBOX.west,
+        north=_BBOX.north,
         resolution_deg=_RES,
         backend=backend,
         destination=_DEST,
@@ -61,15 +59,19 @@ def _make_surface(
 
 
 def _make_gt(surface: TravelTimeSurface, n: int = 50) -> gpd.GeoDataFrame:
-    return make_synthetic_ground_truth(surface, n_points=n, noise_std_min=1.0, random_seed=0)
+    return make_synthetic_ground_truth(
+        surface, n_points=n, noise_std_min=1.0, random_seed=0
+    )
 
 
 # ---------------------------------------------------------------------------
 # Mock SurfaceRouter for testing
 # ---------------------------------------------------------------------------
 
+
 class ConstantRouter(SurfaceRouter):
     """Returns a surface with a constant travel time + small noise."""
+
     def __init__(self, value: float, name: str = "constant") -> None:
         self._value = value
         self._name = name
@@ -78,7 +80,9 @@ class ConstantRouter(SurfaceRouter):
     def name(self) -> str:
         return self._name
 
-    def compute_surface(self, destination, bbox, resolution_deg, mode, *, transit_profile=None):
+    def compute_surface(
+        self, destination, bbox, resolution_deg, mode, *, transit_profile=None
+    ):
         return _make_surface(value=self._value, backend=self._name)
 
 
@@ -103,13 +107,14 @@ class TestOsmnxSurfaceRouterMocked:
     def _make_fake_graph(self):
         """Minimal fake graph with 4 nodes in a small area."""
         import networkx as nx
-        from shapely.geometry import Point
 
         G = nx.MultiDiGraph()
         G.graph["crs"] = "EPSG:4326"
         coords = [
-            (36.83, -1.28), (36.87, -1.28),
-            (36.83, -1.32), (36.87, -1.32),
+            (36.83, -1.28),
+            (36.87, -1.28),
+            (36.83, -1.32),
+            (36.87, -1.32),
         ]
         for i, (x, y) in enumerate(coords):
             G.add_node(i, x=x, y=y)
@@ -123,7 +128,6 @@ class TestOsmnxSurfaceRouterMocked:
 
     def test_returns_travel_time_surface(self) -> None:
         from idd_travel_time.access.backends.osmnx_surface import OsmnxSurfaceRouter
-        import networkx as nx
 
         fake_graph = self._make_fake_graph()
         fake_proj = fake_graph.copy()
@@ -195,12 +199,18 @@ class TestOsmnxSurfaceRouterMocked:
 
 class TestFrictionSurfaceRouter:
     def test_requires_friction_or_speed(self) -> None:
-        from idd_travel_time.access.backends.friction_surface import FrictionSurfaceRouter
+        from idd_travel_time.access.backends.friction_surface import (
+            FrictionSurfaceRouter,
+        )
+
         with pytest.raises(ValueError, match="friction_path"):
             FrictionSurfaceRouter()
 
     def test_uniform_speed_override(self) -> None:
-        from idd_travel_time.access.backends.friction_surface import FrictionSurfaceRouter
+        from idd_travel_time.access.backends.friction_surface import (
+            FrictionSurfaceRouter,
+        )
+
         router = FrictionSurfaceRouter(speed_kph_override=5.0)
         assert router.name == "friction"
         surface = router.compute_surface(_DEST, _BBOX, _RES, _MODE)
@@ -208,14 +218,20 @@ class TestFrictionSurfaceRouter:
         assert surface.backend == "friction"
 
     def test_uniform_surface_non_negative(self) -> None:
-        from idd_travel_time.access.backends.friction_surface import FrictionSurfaceRouter
+        from idd_travel_time.access.backends.friction_surface import (
+            FrictionSurfaceRouter,
+        )
+
         router = FrictionSurfaceRouter(speed_kph_override=5.0)
         surface = router.compute_surface(_DEST, _BBOX, _RES, _MODE)
         valid = surface.data[~np.isnan(surface.data)]
         assert (valid >= 0).all()
 
     def test_destination_has_zero_travel_time(self) -> None:
-        from idd_travel_time.access.backends.friction_surface import FrictionSurfaceRouter
+        from idd_travel_time.access.backends.friction_surface import (
+            FrictionSurfaceRouter,
+        )
+
         router = FrictionSurfaceRouter(speed_kph_override=5.0)
         surface = router.compute_surface(_DEST, _BBOX, _RES, _MODE)
         # Pixel at destination should have near-zero travel time
@@ -228,7 +244,10 @@ class TestFrictionSurfaceRouter:
                 assert val == pytest.approx(0.0, abs=1.0)
 
     def test_travel_time_increases_with_distance(self) -> None:
-        from idd_travel_time.access.backends.friction_surface import FrictionSurfaceRouter
+        from idd_travel_time.access.backends.friction_surface import (
+            FrictionSurfaceRouter,
+        )
+
         router = FrictionSurfaceRouter(speed_kph_override=5.0)
         surface = router.compute_surface(_DEST, _BBOX, _RES, _MODE)
         # Mean travel time over pixels far from destination > near destination
@@ -242,7 +261,10 @@ class TestFrictionSurfaceRouter:
             assert surface.data[near].mean() < surface.data[far].mean()
 
     def test_missing_geotiff_raises(self) -> None:
-        from idd_travel_time.access.backends.friction_surface import FrictionSurfaceRouter
+        from idd_travel_time.access.backends.friction_surface import (
+            FrictionSurfaceRouter,
+        )
+
         router = FrictionSurfaceRouter(friction_path="/nonexistent/file.tif")
         with pytest.raises(FileNotFoundError):
             router.compute_surface(_DEST, _BBOX, _RES, _MODE)
@@ -346,12 +368,14 @@ class TestEnsembleSurfaceRouter:
 
     def test_nan_policy_propagate(self) -> None:
         """With propagate, any NaN in any backend → NaN in output."""
+
         class NaNRouter(SurfaceRouter):
             @property
-            def name(self): return "nan_router"
+            def name(self):
+                return "nan_router"
+
             def compute_surface(self, dest, bbox, res, mode, *, transit_profile=None):
-                s = _make_surface(20.0, nan_fraction=0.5, backend="nan_router")
-                return s
+                return _make_surface(20.0, nan_fraction=0.5, backend="nan_router")
 
         r1 = ConstantRouter(20.0, "r1")
         r2 = NaNRouter()
@@ -361,12 +385,14 @@ class TestEnsembleSurfaceRouter:
 
     def test_nan_policy_ignore(self) -> None:
         """With ignore, NaN backends are skipped at each pixel."""
+
         class NaNRouter(SurfaceRouter):
             @property
-            def name(self): return "nan_router"
+            def name(self):
+                return "nan_router"
+
             def compute_surface(self, dest, bbox, res, mode, *, transit_profile=None):
-                s = _make_surface(20.0, nan_fraction=1.0, backend="nan_router")
-                return s
+                return _make_surface(20.0, nan_fraction=1.0, backend="nan_router")
 
         r1 = ConstantRouter(20.0, "r1")
         r2 = NaNRouter()
@@ -393,8 +419,16 @@ class TestScoreAtPoints:
         s = _make_surface(20.0, nan_fraction=0.0)
         gt = _make_gt(s, n=30)
         scores = score_at_points(s, gt)
-        for k in ("n", "mae", "rmse", "bias", "r2", "pearson_r",
-                  "coverage_error_30min", "coverage_error_60min"):
+        for k in (
+            "n",
+            "mae",
+            "rmse",
+            "bias",
+            "r2",
+            "pearson_r",
+            "coverage_error_30min",
+            "coverage_error_60min",
+        ):
             assert k in scores
 
     def test_positive_bias_when_over_predicted(self) -> None:
@@ -432,8 +466,14 @@ class TestCompareSurfaces:
     def test_keys_present(self) -> None:
         a, b = _make_surface(20.0, backend="a"), _make_surface(30.0, backend="b")
         result = compare_surfaces(a, b)
-        for k in ("n_pixels", "mean_diff", "rmsd", "pearson_r",
-                  "agreement_30min", "agreement_60min"):
+        for k in (
+            "n_pixels",
+            "mean_diff",
+            "rmsd",
+            "pearson_r",
+            "agreement_30min",
+            "agreement_60min",
+        ):
             assert k in result
 
     def test_mean_diff_sign(self) -> None:
@@ -446,6 +486,7 @@ class TestCompareSurfaces:
 class TestBenchmarkTable:
     def test_returns_dataframe(self) -> None:
         import pandas as pd
+
         s = _make_surface(nan_fraction=0.0)
         gt = _make_gt(s)
         table = benchmark_table({"s": s}, gt)
@@ -513,15 +554,21 @@ class TestRunBenchmark:
 
         class FailRouter(SurfaceRouter):
             @property
-            def name(self): return "fail"
+            def name(self):
+                return "fail"
+
             def compute_surface(self, *a, **kw):
-                raise RuntimeError("simulated failure")
+                msg = "simulated failure"
+                raise RuntimeError(msg)
 
         with warnings.catch_warnings(record=True) as caught:
             warnings.simplefilter("always")
             result = run_benchmark(
                 {"fail": FailRouter(), "ok": ConstantRouter(20.0)},
-                _DEST, _BBOX, _RES, _MODE,
+                _DEST,
+                _BBOX,
+                _RES,
+                _MODE,
             )
         assert any("fail" in str(w.message) for w in caught)
         assert "fail" not in result.surfaces
@@ -547,8 +594,12 @@ class TestMakeSyntheticGroundTruth:
     def test_all_nan_surface_raises(self) -> None:
         data = np.full((5, 5), np.nan, dtype=np.float32)
         s = TravelTimeSurface.from_arrays(
-            data=data, west=0.0, north=0.0,
-            resolution_deg=0.01, backend="test", destination=(0.0, 0.0)
+            data=data,
+            west=0.0,
+            north=0.0,
+            resolution_deg=0.01,
+            backend="test",
+            destination=(0.0, 0.0),
         )
         with pytest.raises(ValueError, match="no valid pixels"):
             make_synthetic_ground_truth(s)
@@ -558,6 +609,8 @@ class TestMakeSyntheticGroundTruth:
 # Helper
 # ---------------------------------------------------------------------------
 
+
 def _sample(surface: TravelTimeSurface, gdf: gpd.GeoDataFrame) -> np.ndarray:
     from idd_travel_time.access.metrics import _sample_surface_at_points
+
     return _sample_surface_at_points(surface, gdf)

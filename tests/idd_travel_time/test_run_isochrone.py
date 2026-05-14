@@ -2,23 +2,23 @@
 
 from __future__ import annotations
 
-import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import geopandas as gpd
 import pytest
 from click.testing import CliRunner
 from shapely.geometry import Polygon
 
-from idd_travel_time.constants import TransportMode
 from idd_travel_time.models import TravelTimeRequest, TravelTimeResult
 from idd_travel_time.run_isochrone import main
 
 _SQUARE = Polygon([(-0.01, -0.01), (0.01, -0.01), (0.01, 0.01), (-0.01, 0.01)])
 
 
-def _fake_result(request: TravelTimeRequest, *, router: object = None) -> TravelTimeResult:
+def _fake_result(
+    request: TravelTimeRequest, *, router: object = None
+) -> TravelTimeResult:
     iso_gdf = gpd.GeoDataFrame(
         {
             "geometry": [_SQUARE],
@@ -37,35 +37,43 @@ def _fake_result(request: TravelTimeRequest, *, router: object = None) -> Travel
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def runner() -> CliRunner:
     return CliRunner()
 
 
-@pytest.fixture()
+@pytest.fixture
 def output_file(tmp_path: Path) -> Path:
     return tmp_path / "out.html"
 
 
 def _base_args(output_file: Path) -> list[str]:
     return [
-        "--lat", "-1.2864",
-        "--lon", "36.8172",
-        "--mode", "walking",
-        "--output", str(output_file),
+        "--lat",
+        "-1.2864",
+        "--lon",
+        "36.8172",
+        "--mode",
+        "walking",
+        "--output",
+        str(output_file),
     ]
 
 
 class TestCliBasicWalking:
     def test_exits_zero(self, runner: CliRunner, output_file: Path) -> None:
-        with patch("idd_travel_time.run_isochrone.compute", side_effect=_fake_result), \
-             patch("idd_travel_time.run_isochrone.save_map", return_value=output_file):
+        with (
+            patch("idd_travel_time.run_isochrone.compute", side_effect=_fake_result),
+            patch("idd_travel_time.run_isochrone.save_map", return_value=output_file),
+        ):
             result = runner.invoke(main, _base_args(output_file))
         assert result.exit_code == 0, result.output
 
     def test_output_path_in_stdout(self, runner: CliRunner, output_file: Path) -> None:
-        with patch("idd_travel_time.run_isochrone.compute", side_effect=_fake_result), \
-             patch("idd_travel_time.run_isochrone.save_map", return_value=output_file):
+        with (
+            patch("idd_travel_time.run_isochrone.compute", side_effect=_fake_result),
+            patch("idd_travel_time.run_isochrone.save_map", return_value=output_file),
+        ):
             result = runner.invoke(main, _base_args(output_file))
         assert str(output_file) in result.output
 
@@ -91,12 +99,19 @@ class TestCliTransitMode:
         self, runner: CliRunner, output_file: Path
     ) -> None:
         args = [
-            "--lat", "-1.2864", "--lon", "36.8172",
-            "--mode", "transit",
-            "--output", str(output_file),
+            "--lat",
+            "-1.2864",
+            "--lon",
+            "36.8172",
+            "--mode",
+            "transit",
+            "--output",
+            str(output_file),
         ]
-        with patch("idd_travel_time.run_isochrone.compute", side_effect=_fake_result), \
-             patch("idd_travel_time.run_isochrone.save_map", return_value=output_file):
+        with (
+            patch("idd_travel_time.run_isochrone.compute", side_effect=_fake_result),
+            patch("idd_travel_time.run_isochrone.save_map", return_value=output_file),
+        ):
             result = runner.invoke(main, args)
         assert result.exit_code != 0
 
@@ -104,44 +119,62 @@ class TestCliTransitMode:
         self, runner: CliRunner, output_file: Path
     ) -> None:
         args = [
-            "--lat", "-1.2864", "--lon", "36.8172",
-            "--mode", "transit",
-            "--transit-preset", "informal_minibus",
-            "--output", str(output_file),
+            "--lat",
+            "-1.2864",
+            "--lon",
+            "36.8172",
+            "--mode",
+            "transit",
+            "--transit-preset",
+            "informal_minibus",
+            "--output",
+            str(output_file),
         ]
-        with patch("idd_travel_time.run_isochrone.compute", side_effect=_fake_result), \
-             patch("idd_travel_time.run_isochrone.save_map", return_value=output_file):
+        with (
+            patch("idd_travel_time.run_isochrone.compute", side_effect=_fake_result),
+            patch("idd_travel_time.run_isochrone.save_map", return_value=output_file),
+        ):
             result = runner.invoke(main, args)
         assert result.exit_code == 0, result.output
 
 
 class TestCliRouterSelection:
     def test_router_osmnx_flag(self, runner: CliRunner, output_file: Path) -> None:
-        args = _base_args(output_file) + ["--router", "osmnx"]
-        with patch("idd_travel_time.run_isochrone.compute", side_effect=_fake_result), \
-             patch("idd_travel_time.run_isochrone.save_map", return_value=output_file):
+        args = [*_base_args(output_file), "--router", "osmnx"]
+        with (
+            patch("idd_travel_time.run_isochrone.compute", side_effect=_fake_result),
+            patch("idd_travel_time.run_isochrone.save_map", return_value=output_file),
+        ):
             result = runner.invoke(main, args)
         assert result.exit_code == 0, result.output
 
     def test_invalid_router_fails(self, runner: CliRunner, output_file: Path) -> None:
-        args = _base_args(output_file) + ["--router", "bicycle"]
+        args = [*_base_args(output_file), "--router", "bicycle"]
         result = runner.invoke(main, args)
         assert result.exit_code != 0
 
 
 class TestCliLayerSelection:
     def test_single_layer(self, runner: CliRunner, output_file: Path) -> None:
-        args = _base_args(output_file) + ["--layers", "isochrone"]
-        with patch("idd_travel_time.run_isochrone.compute", side_effect=_fake_result), \
-             patch("idd_travel_time.run_isochrone.save_map", return_value=output_file):
+        args = [*_base_args(output_file), "--layers", "isochrone"]
+        with (
+            patch("idd_travel_time.run_isochrone.compute", side_effect=_fake_result),
+            patch("idd_travel_time.run_isochrone.save_map", return_value=output_file),
+        ):
             result = runner.invoke(main, args)
         assert result.exit_code == 0, result.output
 
     def test_multiple_layers(self, runner: CliRunner, output_file: Path) -> None:
-        args = _base_args(output_file) + [
-            "--layers", "isochrone", "--layers", "heatmap"
+        args = [
+            *_base_args(output_file),
+            "--layers",
+            "isochrone",
+            "--layers",
+            "heatmap",
         ]
-        with patch("idd_travel_time.run_isochrone.compute", side_effect=_fake_result), \
-             patch("idd_travel_time.run_isochrone.save_map", return_value=output_file):
+        with (
+            patch("idd_travel_time.run_isochrone.compute", side_effect=_fake_result),
+            patch("idd_travel_time.run_isochrone.save_map", return_value=output_file),
+        ):
             result = runner.invoke(main, args)
         assert result.exit_code == 0, result.output

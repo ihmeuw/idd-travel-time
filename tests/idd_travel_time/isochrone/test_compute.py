@@ -2,16 +2,19 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
 import geopandas as gpd
-import pytest
 from shapely.geometry import Polygon
 
-from idd_travel_time.constants import TransportMode, VizLayer
+from idd_travel_time.constants import TransportMode
 from idd_travel_time.isochrone.compute import _default_router, compute, compute_batch
 from idd_travel_time.models import TravelTimeRequest, TravelTimeResult
 from idd_travel_time.routers.base import Router
+
+if TYPE_CHECKING:
+    import pytest
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -54,6 +57,7 @@ class TestDefaultRouter:
     def test_uses_osmnx_without_api_key(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.delenv("ORS_API_KEY", raising=False)
         from idd_travel_time.routers.osmnx_router import OsmnxRouter
+
         router = _default_router()
         assert isinstance(router, OsmnxRouter)
 
@@ -61,6 +65,7 @@ class TestDefaultRouter:
         monkeypatch.setenv("ORS_API_KEY", "fake-key")
         with patch("openrouteservice.Client"):
             from idd_travel_time.routers.openroute import OpenRouteServiceRouter
+
             router = _default_router()
             assert isinstance(router, OpenRouteServiceRouter)
 
@@ -73,7 +78,7 @@ class TestDefaultRouter:
 class TestCompute:
     def test_calls_router_compute_isochrone(self) -> None:
         mock = _make_mock_router()
-        result = compute(WALKING_REQUEST, router=mock)
+        compute(WALKING_REQUEST, router=mock)
         mock.compute_isochrone.assert_called_once_with(WALKING_REQUEST)
 
     def test_returns_travel_time_result(self) -> None:
@@ -126,7 +131,8 @@ class TestComputeBatch:
         durations = [15, 30, 45]
         requests = [
             TravelTimeRequest(
-                origin_lat=0.0, origin_lon=0.0,
+                origin_lat=0.0,
+                origin_lon=0.0,
                 mode=TransportMode.WALKING,
                 duration_minutes=d,
             )

@@ -13,7 +13,6 @@ from idd_travel_time.constants import (
     TimeContext,
     TransitCoverage,
     TransportMode,
-    VizLayer,
 )
 from idd_travel_time.io import read_result, result_id, write_result
 from idd_travel_time.models import TransitProfile, TravelTimeRequest, TravelTimeResult
@@ -22,11 +21,15 @@ from idd_travel_time.models import TransitProfile, TravelTimeRequest, TravelTime
 # Fixtures
 # ---------------------------------------------------------------------------
 
-_SQUARE = Polygon([
-    (36.80, -1.30), (36.82, -1.30),
-    (36.82, -1.28), (36.80, -1.28),
-    (36.80, -1.30),
-])
+_SQUARE = Polygon(
+    [
+        (36.80, -1.30),
+        (36.82, -1.30),
+        (36.82, -1.28),
+        (36.80, -1.28),
+        (36.80, -1.30),
+    ]
+)
 
 _WALKING_REQUEST = TravelTimeRequest(
     origin_lat=-1.286389,
@@ -250,18 +253,22 @@ class TestWriteReadFull:
         result = _make_result(network=True)
         out = write_result(result, tmp_path)
         loaded = read_result(out)
+        assert loaded.network_gdf is not None
+        assert result.network_gdf is not None
         assert len(loaded.network_gdf) == len(result.network_gdf)
 
     def test_roundtrip_poi_names(self, tmp_path: Path) -> None:
         result = _make_result(pois=True)
         out = write_result(result, tmp_path)
         loaded = read_result(out)
+        assert loaded.poi_gdf is not None
         assert list(loaded.poi_gdf["name"]) == ["Nairobi Hospital", "KFC"]
 
     def test_roundtrip_poi_crs(self, tmp_path: Path) -> None:
         result = _make_result(pois=True)
         out = write_result(result, tmp_path)
         loaded = read_result(out)
+        assert loaded.poi_gdf is not None
         assert loaded.poi_gdf.crs.to_epsg() == 4326
 
 
@@ -284,12 +291,14 @@ class TestTransitRoundtrip:
         result = _make_result(request=_TRANSIT_REQUEST)
         out = write_result(result, tmp_path)
         loaded = read_result(out)
+        assert loaded.request.transit_profile is not None
         assert loaded.request.transit_profile.coverage is TransitCoverage.ROAD_NETWORK
 
     def test_transit_profile_time_context_preserved(self, tmp_path: Path) -> None:
         result = _make_result(request=_TRANSIT_REQUEST)
         out = write_result(result, tmp_path)
         loaded = read_result(out)
+        assert loaded.request.transit_profile is not None
         assert loaded.request.transit_profile.time_context is TimeContext.RUSH_HOUR
 
 

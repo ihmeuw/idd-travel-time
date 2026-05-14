@@ -184,7 +184,7 @@ def _add_isochrone(m: folium.Map, result: TravelTimeResult) -> None:
 
 def _add_network(m: folium.Map, result: TravelTimeResult) -> None:
     """Add reachable road/path edges as a polyline layer."""
-    assert result.network_gdf is not None
+    assert result.network_gdf is not None  # noqa: S101  # caller checks VizLayer.NETWORK
     layer = folium.FeatureGroup(name="Road network", show=False)
     folium.GeoJson(
         result.network_gdf.__geo_interface__,
@@ -199,7 +199,7 @@ def _add_network(m: folium.Map, result: TravelTimeResult) -> None:
 
 def _add_pois(m: folium.Map, result: TravelTimeResult) -> None:
     """Add named POIs as circle markers with popups."""
-    assert result.poi_gdf is not None
+    assert result.poi_gdf is not None  # noqa: S101  # caller checks VizLayer.POI_SCATTER
     layer = folium.FeatureGroup(name="Places of interest", show=True)
 
     for _, row in result.poi_gdf.iterrows():
@@ -272,7 +272,7 @@ def _sample_polygon_points(
     an empty list if the polygon has no usable exterior.
     """
     try:
-        from shapely.geometry import MultiPolygon, Polygon  # noqa: PLC0415
+        from shapely.geometry import MultiPolygon, Polygon
 
         if isinstance(polygon, MultiPolygon):
             # Use the largest component
@@ -291,7 +291,7 @@ def _sample_polygon_points(
             frac = i / n
             pt = exterior.interpolate(frac, normalized=True)
             points.append((pt.y, pt.x))  # folium wants (lat, lon)
-        return points
 
     except Exception:  # noqa: BLE001
         return []
+    return points

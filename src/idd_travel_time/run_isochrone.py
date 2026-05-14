@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import click
 
@@ -38,54 +39,100 @@ from idd_travel_time.isochrone import compute
 from idd_travel_time.models import TransitProfile, TravelTimeRequest
 from idd_travel_time.viz import save as save_map
 
+if TYPE_CHECKING:
+    from idd_travel_time.routers.base import Router
+
 _VALID_MODES = [m.value for m in TransportMode]
 _VALID_CONTEXTS = [c.value for c in TimeContext]
-_VALID_LAYERS = [l.value for l in VizLayer]
+_VALID_LAYERS = [lyr.value for lyr in VizLayer]
 _VALID_ROUTERS = ["auto", "ors", "osmnx"]
 
 
-def _build_router(router_name: str) -> object:
+def _build_router(router_name: str) -> Router | None:
     if router_name == "ors":
-        from idd_travel_time.routers.openroute import OpenRouteServiceRouter  # noqa: PLC0415
+        from idd_travel_time.routers.openroute import (
+            OpenRouteServiceRouter,
+        )
+
         return OpenRouteServiceRouter()
     if router_name == "osmnx":
-        from idd_travel_time.routers.osmnx_router import OsmnxRouter  # noqa: PLC0415
+        from idd_travel_time.routers.osmnx_router import OsmnxRouter
+
         return OsmnxRouter()
     return None
 
 
 @click.command(name="run-isochrone")
-@click.option("--place", default=None, type=str,
-              help="Origin as a place name or address (geocoded via Nominatim). "
-                   "Mutually exclusive with --lat/--lon.")
-@click.option("--country-hint", "country_hint", default=None, type=str,
-              help="ISO 3166-1 alpha-2 code to bias --place geocoding, e.g. 'NG'.")
-@click.option("--lat", default=None, type=float,
-              help="Origin latitude (WGS-84). Requires --lon.")
-@click.option("--lon", default=None, type=float,
-              help="Origin longitude (WGS-84). Requires --lat.")
-@click.option("--mode", required=True,
-              type=click.Choice(_VALID_MODES, case_sensitive=False),
-              help="Transport mode.")
-@click.option("--duration", default=30, show_default=True, type=int,
-              help="Isochrone duration in minutes.")
-@click.option("--time-context", "time_context",
-              default=TimeContext.OFF_PEAK.value, show_default=True,
-              type=click.Choice(_VALID_CONTEXTS, case_sensitive=False),
-              help="Time-of-day context (affects transit speed assumptions).")
-@click.option("--transit-preset", "transit_preset", default=None, type=str,
-              help="Named TransitProfile preset (required when --mode=transit). "
-                   "Options: formal_bus, informal_minibus, mototaxi, metro, tuk_tuk.")
-@click.option("--router", default="auto", show_default=True,
-              type=click.Choice(_VALID_ROUTERS, case_sensitive=False),
-              help="Routing backend. 'auto' picks ORS if ORS_API_KEY is set, else osmnx.")
-@click.option("--layers", multiple=True,
-              type=click.Choice(_VALID_LAYERS, case_sensitive=False),
-              default=_VALID_LAYERS, show_default=True,
-              help="Visualisation layers to include (repeat flag for multiple).")
-@click.option("--output", required=True,
-              type=click.Path(dir_okay=False, writable=True),
-              help="Output HTML file path.")
+@click.option(
+    "--place",
+    default=None,
+    type=str,
+    help="Origin as a place name or address (geocoded via Nominatim). "
+    "Mutually exclusive with --lat/--lon.",
+)
+@click.option(
+    "--country-hint",
+    "country_hint",
+    default=None,
+    type=str,
+    help="ISO 3166-1 alpha-2 code to bias --place geocoding, e.g. 'NG'.",
+)
+@click.option(
+    "--lat", default=None, type=float, help="Origin latitude (WGS-84). Requires --lon."
+)
+@click.option(
+    "--lon", default=None, type=float, help="Origin longitude (WGS-84). Requires --lat."
+)
+@click.option(
+    "--mode",
+    required=True,
+    type=click.Choice(_VALID_MODES, case_sensitive=False),
+    help="Transport mode.",
+)
+@click.option(
+    "--duration",
+    default=30,
+    show_default=True,
+    type=int,
+    help="Isochrone duration in minutes.",
+)
+@click.option(
+    "--time-context",
+    "time_context",
+    default=TimeContext.OFF_PEAK.value,
+    show_default=True,
+    type=click.Choice(_VALID_CONTEXTS, case_sensitive=False),
+    help="Time-of-day context (affects transit speed assumptions).",
+)
+@click.option(
+    "--transit-preset",
+    "transit_preset",
+    default=None,
+    type=str,
+    help="Named TransitProfile preset (required when --mode=transit). "
+    "Options: formal_bus, informal_minibus, mototaxi, metro, tuk_tuk.",
+)
+@click.option(
+    "--router",
+    default="auto",
+    show_default=True,
+    type=click.Choice(_VALID_ROUTERS, case_sensitive=False),
+    help="Routing backend. 'auto' picks ORS if ORS_API_KEY is set, else osmnx.",
+)
+@click.option(
+    "--layers",
+    multiple=True,
+    type=click.Choice(_VALID_LAYERS, case_sensitive=False),
+    default=_VALID_LAYERS,
+    show_default=True,
+    help="Visualisation layers to include (repeat flag for multiple).",
+)
+@click.option(
+    "--output",
+    required=True,
+    type=click.Path(dir_okay=False, writable=True),
+    help="Output HTML file path.",
+)
 def main(
     place: str | None,
     country_hint: str | None,
@@ -109,13 +156,12 @@ def main(
         click.echo("Error: --place and --lat/--lon are mutually exclusive.", err=True)
         sys.exit(1)
     if not place and (lat is None or lon is None):
-        click.echo(
-            "Error: provide either --place or both --lat and --lon.", err=True
-        )
+        click.echo("Error: provide either --place or both --lat and --lon.", err=True)
         sys.exit(1)
 
     if place:
-        from idd_travel_time.locations import GeocodingError, geocode  # noqa: PLC0415
+        from idd_travel_time.locations import GeocodingError, geocode
+
         click.echo(f"Geocoding {place!r} …")
         try:
             lat, lon = geocode(place, country_hint=country_hint)
@@ -124,12 +170,13 @@ def main(
             click.echo(f"Error: {exc}", err=True)
             sys.exit(1)
 
-    assert lat is not None and lon is not None
+    assert lat is not None  # noqa: S101  # narrowed by --place / --lat-lon validation
+    assert lon is not None  # noqa: S101  # narrowed by --place / --lat-lon validation
 
     # --- request construction ---
     transport_mode = TransportMode(mode)
     tc = TimeContext(time_context)
-    viz_layers = [VizLayer(l) for l in layers]
+    viz_layers = [VizLayer(lyr) for lyr in layers]
 
     transit_profile: TransitProfile | None = None
     if transport_mode is TransportMode.TRANSIT:
