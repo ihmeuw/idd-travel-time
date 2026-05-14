@@ -56,8 +56,12 @@ if TYPE_CHECKING:
 _key_locks: dict[str, threading.Lock] = {}
 _key_locks_mutex = threading.Lock()
 
-_COORD_PRECISION = 4   # decimal places for lat/lon rounding in cache key
+_COORD_PRECISION = 4  # decimal places for lat/lon rounding in cache key
 _DEFAULT_NETWORK_TYPE = "all"
+
+# Cache filenames longer than this collapse the trailing portion to a hash to
+# stay within OS path-length limits across filesystems.
+_MAX_CACHE_KEY_LEN: int = 120
 
 
 class GraphCache:
@@ -99,7 +103,7 @@ class GraphCache:
         -------
         networkx.MultiDiGraph
         """
-        import osmnx as ox  # noqa: PLC0415
+        import osmnx as ox
 
         key = cache_key(lat, lon, radius_m, network_type)
         path = self._path_for_key(key)
@@ -194,8 +198,8 @@ def cache_key(
     raw = f"{lat_s}_{lon_s}_{radius_s}_{network_type}"
 
     # Hash long network_type strings to keep filenames short.
-    if len(raw) > 120:
-        suffix = hashlib.sha1(raw.encode()).hexdigest()[:12]
+    if len(raw) > _MAX_CACHE_KEY_LEN:
+        suffix = hashlib.sha1(raw.encode(), usedforsecurity=False).hexdigest()[:12]
         raw = f"{lat_s}_{lon_s}_{radius_s}_{suffix}"
 
     return raw
@@ -203,7 +207,7 @@ def cache_key(
 
 def default_cache_from_env() -> GraphCache | None:
     """Return a GraphCache if IDD_GRAPH_CACHE_DIR is set, else None."""
-    import os  # noqa: PLC0415
+    import os
 
     cache_dir = os.environ.get("IDD_GRAPH_CACHE_DIR")
     if cache_dir:

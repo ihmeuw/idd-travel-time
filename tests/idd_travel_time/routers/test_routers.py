@@ -6,17 +6,14 @@ All tests run fully offline.
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import geopandas as gpd
 import pytest
 from shapely.geometry import Point, Polygon
 
 from idd_travel_time.constants import (
-    TransitCoverage,
     TransportMode,
-    TimeContext,
-    VizLayer,
 )
 from idd_travel_time.models import TransitProfile, TravelTimeRequest
 from idd_travel_time.routers._helpers import (
@@ -79,7 +76,9 @@ class TestMakeIsochroneGdf:
 
     def test_schema_columns(self) -> None:
         gdf = make_isochrone_gdf(_SQUARE, WALKING_REQUEST)
-        assert {"geometry", "duration_min", "mode", "time_context"}.issubset(gdf.columns)
+        assert {"geometry", "duration_min", "mode", "time_context"}.issubset(
+            gdf.columns
+        )
 
     def test_duration_value(self) -> None:
         gdf = make_isochrone_gdf(_SQUARE, WALKING_REQUEST)
@@ -238,13 +237,15 @@ class TestOpenRouteServiceRouter:
             "type": "Feature",
             "geometry": {
                 "type": "Polygon",
-                "coordinates": [[
-                    [36.80, -1.30],
-                    [36.82, -1.30],
-                    [36.82, -1.28],
-                    [36.80, -1.28],
-                    [36.80, -1.30],
-                ]],
+                "coordinates": [
+                    [
+                        [36.80, -1.30],
+                        [36.82, -1.30],
+                        [36.82, -1.28],
+                        [36.80, -1.28],
+                        [36.80, -1.30],
+                    ]
+                ],
             },
             "properties": {},
         }
@@ -255,8 +256,12 @@ class TestOpenRouteServiceRouter:
             instance.isochrones.return_value = fake_iso_response
 
             # Suppress network/POI fetches
-            with patch.object(OpenRouteServiceRouter, "_fetch_network", return_value=None), \
-                 patch.object(OpenRouteServiceRouter, "_fetch_pois", return_value=None):
+            with (
+                patch.object(
+                    OpenRouteServiceRouter, "_fetch_network", return_value=None
+                ),
+                patch.object(OpenRouteServiceRouter, "_fetch_pois", return_value=None),
+            ):
                 r = OpenRouteServiceRouter(api_key="fake-key")
                 result = r.compute_isochrone(WALKING_REQUEST)
 

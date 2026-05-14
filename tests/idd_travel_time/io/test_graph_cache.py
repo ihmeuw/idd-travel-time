@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-import threading
 from pathlib import Path
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -130,7 +129,7 @@ class TestGetOrDownload:
 
         with patch("idd_travel_time.io.graph_cache.GraphCache.get_or_download") as mock:
             mock.return_value = fake
-            result = cache.get_or_download(-1.2864, 36.8172, 3000)
+            cache.get_or_download(-1.2864, 36.8172, 3000)
             mock.assert_called_once()
 
     def test_cache_hit_skips_overpass(self, tmp_path: Path) -> None:
@@ -138,9 +137,11 @@ class TestGetOrDownload:
         cache = GraphCache(tmp_path)
         fake = _fake_graph()
 
-        with patch("osmnx.graph_from_point", return_value=fake) as mock_dl, \
-             patch("osmnx.save_graphml"), \
-             patch("osmnx.load_graphml", return_value=fake):
+        with (
+            patch("osmnx.graph_from_point", return_value=fake) as mock_dl,
+            patch("osmnx.save_graphml"),
+            patch("osmnx.load_graphml", return_value=fake),
+        ):
             cache.get_or_download(-1.2864, 36.8172, 3000)
             # Manually mark as cached
             key = cache_key(-1.2864, 36.8172, 3000)
@@ -153,9 +154,11 @@ class TestGetOrDownload:
         cache = GraphCache(tmp_path)
         fake = _fake_graph()
 
-        with patch("osmnx.graph_from_point", return_value=fake), \
-             patch("osmnx.save_graphml") as mock_save, \
-             patch("osmnx.load_graphml", return_value=fake):
+        with (
+            patch("osmnx.graph_from_point", return_value=fake),
+            patch("osmnx.save_graphml") as mock_save,
+            patch("osmnx.load_graphml", return_value=fake),
+        ):
             # Pre-create the file so has() returns True immediately
             key = cache_key(-1.2864, 36.8172, 3000)
             graphml_path = tmp_path / f"{key}.graphml"
@@ -168,8 +171,10 @@ class TestGetOrDownload:
         cache = GraphCache(tmp_path)
         fake = _fake_graph()
 
-        with patch("osmnx.graph_from_point", return_value=fake), \
-             patch("osmnx.save_graphml") as mock_save:
+        with (
+            patch("osmnx.graph_from_point", return_value=fake),
+            patch("osmnx.save_graphml") as mock_save,
+        ):
             cache.get_or_download(-1.2864, 36.8172, 3000)
         mock_save.assert_called_once()
 
@@ -275,17 +280,17 @@ class TestOsmnxRouterCacheWiring:
         router = OsmnxRouter()
         assert router._cache is None
 
-    def test_router_calls_cache_get_or_download(
-        self, tmp_path: Path
-    ) -> None:
+    def test_router_calls_cache_get_or_download(self, tmp_path: Path) -> None:
         """When a cache is provided, _get_graph must call cache.get_or_download."""
         from idd_travel_time.constants import TransportMode
         from idd_travel_time.models import TravelTimeRequest
         from idd_travel_time.routers.osmnx_router import OsmnxRouter
 
         request = TravelTimeRequest(
-            origin_lat=-1.2864, origin_lon=36.8172,
-            mode=TransportMode.WALKING, duration_minutes=20,
+            origin_lat=-1.2864,
+            origin_lon=36.8172,
+            mode=TransportMode.WALKING,
+            duration_minutes=20,
         )
 
         mock_cache = MagicMock(spec=GraphCache)
@@ -294,9 +299,9 @@ class TestOsmnxRouterCacheWiring:
 
         with patch.object(router, "_get_graph", wraps=router._get_graph):
             # Just test that _get_graph delegates to the cache
-            import math
             from idd_travel_time.routers._helpers import effective_speed_kph
             from idd_travel_time.routers.osmnx_router import _travel_distance_meters
+
             speed = effective_speed_kph(request)
             dist = _travel_distance_meters(speed, request.duration_minutes)
             router._get_graph(request, dist * 1.2)

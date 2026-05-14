@@ -10,7 +10,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from idd_travel_time.models import TravelTimeResult, TravelTimeRequest
+    from idd_travel_time.models import TravelTimeRequest, TravelTimeResult
 
 
 class Router(ABC):

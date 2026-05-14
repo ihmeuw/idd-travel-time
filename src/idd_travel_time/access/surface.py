@@ -366,7 +366,7 @@ class TravelTimeSurface:
         NaN cells are False (unreachable).
         """
         valid = ~np.isnan(self.data)
-        return valid & (self.data <= minutes)
+        return np.asarray(valid & (self.data <= minutes))
 
     def summary_stats(self) -> dict[str, Any]:
         """Return descriptive statistics over valid (non-NaN) pixels."""

@@ -18,12 +18,15 @@ Callers that want explicit router control can pass one in:
 from __future__ import annotations
 
 import os
+import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from idd_travel_time.routers.base import Router
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from idd_travel_time.models import TravelTimeRequest, TravelTimeResult
 
 
@@ -35,10 +38,14 @@ def _default_router() -> Router:
     2. OsmnxRouter otherwise (local, no key required).
     """
     if os.environ.get("ORS_API_KEY"):
-        from idd_travel_time.routers.openroute import OpenRouteServiceRouter  # noqa: PLC0415
+        from idd_travel_time.routers.openroute import (
+            OpenRouteServiceRouter,
+        )
+
         return OpenRouteServiceRouter()
 
-    from idd_travel_time.routers.osmnx_router import OsmnxRouter  # noqa: PLC0415
+    from idd_travel_time.routers.osmnx_router import OsmnxRouter
+
     return OsmnxRouter()
 
 
@@ -107,10 +114,10 @@ def compute_batch(
     return [active_router.compute_isochrone(req) for req in requests]
 
 
-def compute_parallel(
+def compute_parallel(  # noqa: C901  # legitimate orchestration complexity
     requests: list[TravelTimeRequest],
     *,
-    router_factory: object | None = None,
+    router_factory: Callable[[], Router] | None = None,
     max_workers: int | None = None,
     output_dir: str | Path | None = None,
     skip_existing: bool = True,
@@ -171,14 +178,17 @@ def compute_parallel(
     ...     skip_existing=True,
     ... )
     """
-    import logging  # noqa: PLC0415
-    import warnings  # noqa: PLC0415
-    from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed  # noqa: PLC0415
-    from pathlib import Path as _Path  # noqa: PLC0415
+    import logging
+    from concurrent.futures import (
+        ProcessPoolExecutor,
+        ThreadPoolExecutor,
+        as_completed,
+    )
+    from pathlib import Path as _Path
 
-    from idd_travel_time.io import result_id, write_result  # noqa: PLC0415
+    from idd_travel_time.io import result_id, write_result
 
-    logger = logging.getLogger(__name__)
+    logging.getLogger(__name__)
 
     if on_error not in ("warn", "raise"):
         msg = f"on_error must be 'warn' or 'raise', got {on_error!r}"
@@ -197,11 +207,16 @@ def compute_parallel(
             if expected.is_dir() and (expected / "meta.json").exists():
                 # Load existing result rather than recomputing.
                 try:
-                    from idd_travel_time.io import read_result  # noqa: PLC0415
+                    from idd_travel_time.io import read_result
+
                     results[i] = read_result(expected)
                     continue
-                except Exception:  # noqa: BLE001
-                    pass  # corrupted — recompute
+                except Exception as exc:  # noqa: BLE001
+                    warnings.warn(
+                        f"Existing result at {expected} unreadable ({exc}); recomputing.",
+                        RuntimeWarning,
+                        stacklevel=2,
+                    )
         work.append((i, req))
 
     if not work:
@@ -221,7 +236,7 @@ def compute_parallel(
                 results[i] = result
                 if out_root is not None:
                     write_result(result, out_root)
-            except Exception as exc:  # noqa: BLE001
+            except Exception as exc:
                 if on_error == "raise":
                     raise
                 warnings.warn(
@@ -235,12 +250,12 @@ def compute_parallel(
 
 def _worker(
     request: TravelTimeRequest,
-    router_factory: object,
+    router_factory: Callable[[], Router],
 ) -> TravelTimeResult:
     """Top-level function executed in each worker process.
 
     Must be importable at module level (not a lambda or nested function)
     for pickling under ProcessPoolExecutor.
     """
-    router = router_factory()  # type: ignore[call-arg]
+    router = router_factory()
     return router.compute_isochrone(request)

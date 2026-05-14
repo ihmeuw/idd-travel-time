@@ -22,6 +22,12 @@ from idd_travel_time.constants import (
 if TYPE_CHECKING:
     import geopandas as gpd
 
+# WGS-84 coordinate bounds.
+_LAT_MIN: float = -90.0
+_LAT_MAX: float = 90.0
+_LON_MIN: float = -180.0
+_LON_MAX: float = 180.0
+
 
 # ---------------------------------------------------------------------------
 # TransitProfile
@@ -63,9 +69,7 @@ class TransitProfile:
             msg = f"typical_speed_kph lower bound must be > 0, got {lo}"
             raise ValueError(msg)
         if lo > hi:
-            msg = (
-                f"typical_speed_kph lower bound ({lo}) must be <= upper bound ({hi})"
-            )
+            msg = f"typical_speed_kph lower bound ({lo}) must be <= upper bound ({hi})"
             raise ValueError(msg)
 
     # ------------------------------------------------------------------
@@ -118,7 +122,7 @@ class TransitProfile:
             If *name* is not found in the preset registry.
         """
         # Import here to avoid circular import at module load time.
-        from idd_travel_time.profiles import get_preset  # noqa: PLC0415
+        from idd_travel_time.profiles import get_preset
 
         base = get_preset(name)
         return cls(
@@ -126,7 +130,9 @@ class TransitProfile:
             if typical_speed_kph is not None
             else base.typical_speed_kph,
             coverage=coverage if coverage is not None else base.coverage,
-            time_context=time_context if time_context is not None else base.time_context,
+            time_context=time_context
+            if time_context is not None
+            else base.time_context,
             mode_name=mode_name if mode_name is not None else base.mode_name,
         )
 
@@ -162,16 +168,18 @@ class TravelTimeRequest:
     duration_minutes: int = DEFAULT_DURATION_MINUTES
     time_context: TimeContext = TimeContext.OFF_PEAK
     transit_profile: TransitProfile | None = None
-    viz_layers: list[VizLayer] = field(
-        default_factory=lambda: list(VizLayer)
-    )
+    viz_layers: list[VizLayer] = field(default_factory=lambda: list(VizLayer))
 
     def __post_init__(self) -> None:
-        if not (-90.0 <= self.origin_lat <= 90.0):
-            msg = f"origin_lat must be in [-90, 90], got {self.origin_lat}"
+        if not (_LAT_MIN <= self.origin_lat <= _LAT_MAX):
+            msg = (
+                f"origin_lat must be in [{_LAT_MIN}, {_LAT_MAX}], got {self.origin_lat}"
+            )
             raise ValueError(msg)
-        if not (-180.0 <= self.origin_lon <= 180.0):
-            msg = f"origin_lon must be in [-180, 180], got {self.origin_lon}"
+        if not (_LON_MIN <= self.origin_lon <= _LON_MAX):
+            msg = (
+                f"origin_lon must be in [{_LON_MIN}, {_LON_MAX}], got {self.origin_lon}"
+            )
             raise ValueError(msg)
         if self.duration_minutes <= 0:
             msg = f"duration_minutes must be > 0, got {self.duration_minutes}"
@@ -242,7 +250,7 @@ class TravelTimeRequest:
         ...     transit_profile=TransitProfile.from_preset("informal_minibus"),
         ... )
         """
-        from idd_travel_time.locations import geocode  # noqa: PLC0415
+        from idd_travel_time.locations import geocode
 
         lat, lon = geocode(place, country_hint=country_hint)
         return cls(
@@ -308,7 +316,7 @@ class TravelTimeResult:
         Path
             The result directory (``output_dir / result_id``).
         """
-        from idd_travel_time.io import write_result  # noqa: PLC0415
+        from idd_travel_time.io import write_result
 
         return write_result(self, Path(output_dir))
 
@@ -327,6 +335,6 @@ class TravelTimeResult:
         -------
         TravelTimeResult
         """
-        from idd_travel_time.io import read_result  # noqa: PLC0415
+        from idd_travel_time.io import read_result
 
         return read_result(Path(result_dir))

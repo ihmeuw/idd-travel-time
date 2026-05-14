@@ -76,7 +76,8 @@ class GoogleMapsRouter(Router):
         NotImplementedError
             Always, until this stub is implemented.
         """
-        raise NotImplementedError(
+        msg = (
             "GoogleMapsRouter.compute_isochrone is not yet implemented. "
             "Use OpenRouteServiceRouter (free) or OsmnxRouter (local) instead."
         )
+        raise NotImplementedError(msg)

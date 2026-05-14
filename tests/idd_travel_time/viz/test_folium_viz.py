@@ -7,7 +7,6 @@ from pathlib import Path
 
 import folium
 import geopandas as gpd
-import pytest
 from shapely.geometry import Point, Polygon
 
 from idd_travel_time.constants import TransportMode, VizLayer
@@ -23,11 +22,15 @@ from idd_travel_time.viz.folium_viz import (
 # Fixtures
 # ---------------------------------------------------------------------------
 
-_SQUARE = Polygon([
-    (36.80, -1.30), (36.82, -1.30),
-    (36.82, -1.28), (36.80, -1.28),
-    (36.80, -1.30),
-])
+_SQUARE = Polygon(
+    [
+        (36.80, -1.30),
+        (36.82, -1.30),
+        (36.82, -1.28),
+        (36.80, -1.28),
+        (36.80, -1.30),
+    ]
+)
 
 _WALKING_REQUEST = TravelTimeRequest(
     origin_lat=-1.286389,
@@ -127,12 +130,14 @@ class TestSamplePolygonPoints:
 
     def test_empty_polygon_returns_empty(self) -> None:
         from shapely.geometry import Polygon
+
         empty = Polygon()
         pts = _sample_polygon_points(empty, n=50)
         assert pts == []
 
     def test_multipolygon_uses_largest(self) -> None:
         from shapely.geometry import MultiPolygon
+
         small = Polygon([(0, 0), (0.001, 0), (0.001, 0.001), (0, 0)])
         large = _SQUARE
         mp = MultiPolygon([small, large])
@@ -176,7 +181,7 @@ class TestRender:
 
     def test_map_html_nonempty(self) -> None:
         result = _make_result()
-        html = m = render(result)
+        m = render(result)
         assert m._repr_html_()
 
 

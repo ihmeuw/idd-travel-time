@@ -46,6 +46,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.ruff]
 target-version = "py312"
 src = ["src"]
+extend-exclude = ["notebooks/"]  # vignettes are illustrative; production rules don't apply
 
 [tool.ruff.lint]
 select = ["ALL"]
@@ -65,12 +66,43 @@ ignore = [
 max-args = 10
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101", "ARG", "S105"]
+"tests/**" = [
+    "S101",     # asserts are how pytest works
+    "ARG",      # pytest fixtures sometimes look unused
+    "S105",     # hardcoded passwords in tests
+    "PLR2004",  # tests inherently use magic values (dpi=72, n=100)
+    "SLF001",   # tests legitimately access private members
+    "FBT001",   # boolean trap is fine in test parametrisation
+    "FBT002",   # default-bool args fine in tests
+    "SIM117",   # nested `with` for mocking is clearer than combined
+    "N806",     # tests sometimes use non-lowercase for emphasis
+    "E741",     # single-char vars in tests
+    "PD901",    # `df` is fine in tests
+    "RUF003",   # tests don't author user-facing comment content
+    "ERA001",   # commented test code can be reference / debug history
+]
 "src/idd_travel_time/run_isochrone.py" = ["PLR0913"]  # CLI: @click.option decorators count as args
+"**/io/__init__.py" = ["A005"]  # `io` is the namespaced package name, not stdlib shadowing in practice
 
 [tool.mypy]
 strict = true
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+# Test fixtures and parametrised functions naturally don't carry full type
+# annotations; relax strict checks for test code only.
+disallow_untyped_defs = false
+disallow_untyped_calls = false
+disallow_incomplete_defs = false
+disallow_untyped_decorators = false
+
+[[tool.mypy.overrides]]
+module = "idd_travel_time.run_isochrone"
+# click's @command/@option decorators don't preserve function signatures —
+# disabling the rule here is cleaner than scattering # type: ignore on every
+# decorator.
+disallow_untyped_decorators = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

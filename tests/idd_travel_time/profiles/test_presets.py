@@ -5,8 +5,8 @@ from __future__ import annotations
 import pytest
 
 from idd_travel_time.constants import TransitCoverage
-from idd_travel_time.profiles import PRESETS, get_preset, list_presets
 from idd_travel_time.models import TransitProfile
+from idd_travel_time.profiles import PRESETS, get_preset, list_presets
 
 # ---------------------------------------------------------------------------
 # Registry completeness
@@ -128,7 +128,8 @@ def test_all_presets_valid_speed_range(name: str) -> None:
 @pytest.mark.parametrize("name", list(EXPECTED_PRESETS))
 def test_all_presets_have_mode_name(name: str) -> None:
     p = get_preset(name)
-    assert p.mode_name and len(p.mode_name) > 0
+    assert p.mode_name
+    assert len(p.mode_name) > 0
 
 
 @pytest.mark.parametrize("name", list(EXPECTED_PRESETS))

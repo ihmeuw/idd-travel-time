@@ -29,7 +29,6 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING
 
-import geopandas as gpd
 import openrouteservice
 from shapely.geometry import shape
 
@@ -44,6 +43,8 @@ from idd_travel_time.routers._helpers import (
 from idd_travel_time.routers.base import Router
 
 if TYPE_CHECKING:
+    import geopandas as gpd
+
     from idd_travel_time.models import TravelTimeRequest
 
 # ORS driving-car assumes ~30 kph average urban speed for range scaling.
@@ -126,7 +127,7 @@ class OpenRouteServiceRouter(Router):
         to ORS's implicit driving speed so the polygon covers the correct
         real-world area.
         """
-        from idd_travel_time.constants import TransportMode  # noqa: PLC0415
+        from idd_travel_time.constants import TransportMode
 
         base_seconds = request.duration_minutes * 60
 
@@ -147,8 +148,9 @@ class OpenRouteServiceRouter(Router):
         query fails — network is optional in the result.
         """
         try:
-            import osmnx as ox  # noqa: PLC0415
-            from idd_travel_time.routers._helpers import _WGS84  # noqa: PLC0415
+            import osmnx as ox
+
+            from idd_travel_time.routers._helpers import _WGS84
 
             polygon = isochrone_gdf.geometry.iloc[0]
             graph = ox.graph_from_polygon(polygon, network_type="all")
@@ -166,10 +168,10 @@ class OpenRouteServiceRouter(Router):
         Returns None on any failure — POIs are optional.
         """
         try:
-            import osmnx as ox  # noqa: PLC0415
+            import osmnx as ox
 
             polygon = isochrone_gdf.geometry.iloc[0]
-            tags = {"amenity": True, "name": True}
+            tags: dict[str, bool | str | list[str]] = {"amenity": True, "name": True}
             pois = ox.features_from_polygon(polygon, tags=tags)
             pois = pois[pois.geometry.geom_type == "Point"].copy()
 

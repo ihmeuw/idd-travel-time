@@ -35,12 +35,21 @@ from idd_travel_time.access.surface import TravelTimeSurface
 from idd_travel_time.access.surface_router import SurfaceRouter
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from idd_travel_time.access.surface import BoundingBox
     from idd_travel_time.constants import TransportMode
     from idd_travel_time.models import TransitProfile
 
 _VALID_STRATEGIES = ("mean", "median", "min", "max", "stack")
 _VALID_NAN_POLICIES = ("propagate", "ignore")
+
+# Minimum number of routers for the ensemble to be meaningful.
+_MIN_ROUTERS_FOR_ENSEMBLE: int = 2
+
+# Relative tolerance for "two surfaces' native resolutions agree", below which
+# we skip resampling.
+_RESOLUTION_REL_TOLERANCE: float = 0.01
 
 
 class EnsembleSurfaceRouter(SurfaceRouter):
@@ -68,7 +77,7 @@ class EnsembleSurfaceRouter(SurfaceRouter):
         weights: list[float] | None = None,
         nan_policy: str = "propagate",
     ) -> None:
-        if len(routers) < 2:
+        if len(routers) < _MIN_ROUTERS_FOR_ENSEMBLE:
             msg = "EnsembleSurfaceRouter requires at least 2 routers."
             raise ValueError(msg)
         if strategy not in _VALID_STRATEGIES:
@@ -114,7 +123,10 @@ class EnsembleSurfaceRouter(SurfaceRouter):
     ) -> TravelTimeSurface:
         """Compute and aggregate surfaces from all backends."""
         surfaces = self._compute_all(
-            destination, bbox, resolution_deg, mode,
+            destination,
+            bbox,
+            resolution_deg,
+            mode,
             transit_profile=transit_profile,
         )
 
@@ -139,7 +151,10 @@ class EnsembleSurfaceRouter(SurfaceRouter):
         Useful for visualising inter-backend differences.
         """
         return self._compute_all(
-            destination, bbox, resolution_deg, mode,
+            destination,
+            bbox,
+            resolution_deg,
+            mode,
             transit_profile=transit_profile,
         )
 
@@ -157,7 +172,10 @@ class EnsembleSurfaceRouter(SurfaceRouter):
         This is a simple measure of inter-model spread / uncertainty.
         """
         surfaces = self._compute_all(
-            destination, bbox, resolution_deg, mode,
+            destination,
+            bbox,
+            resolution_deg,
+            mode,
             transit_profile=transit_profile,
         )
         aligned = _align_to_common_grid(list(surfaces.values()), resolution_deg)
@@ -200,7 +218,10 @@ class EnsembleSurfaceRouter(SurfaceRouter):
         surfaces: dict[str, TravelTimeSurface] = {}
         for router in self._routers:
             surfaces[router.name] = router.compute_surface(
-                destination, bbox, resolution_deg, mode,
+                destination,
+                bbox,
+                resolution_deg,
+                mode,
                 transit_profile=transit_profile,
             )
         return surfaces
@@ -209,11 +230,13 @@ class EnsembleSurfaceRouter(SurfaceRouter):
         self,
         surfaces: dict[str, TravelTimeSurface],
         destination: tuple[float, float],
-        bbox: BoundingBox,
+        bbox: BoundingBox,  # noqa: ARG002  # signature symmetry with compute_surface
         resolution_deg: float,
     ) -> TravelTimeSurface:
         aligned = _align_to_common_grid(list(surfaces.values()), resolution_deg)
-        stack = np.stack([s.data for s in aligned], axis=0)  # (n_backends, nrows, ncols)
+        stack = np.stack(
+            [s.data for s in aligned], axis=0
+        )  # (n_backends, nrows, ncols)
 
         if self._strategy == "mean":
             if self._weights is not None:
@@ -226,20 +249,28 @@ class EnsembleSurfaceRouter(SurfaceRouter):
                     result = np.where(~np.isnan(stack), stack * w, 0.0).sum(axis=0)
                     result = np.where(weight_sum > 0, result / weight_sum, np.nan)
             else:
-                fn = np.nanmean if self._nan_policy == "ignore" else _strict_mean
-                result = fn(stack, axis=0)
+                fn_mean: Callable[[np.ndarray, int], np.ndarray] = (
+                    np.nanmean if self._nan_policy == "ignore" else _strict_mean
+                )
+                result = fn_mean(stack, 0)
 
         elif self._strategy == "median":
-            fn = np.nanmedian if self._nan_policy == "ignore" else _strict_median
-            result = fn(stack, axis=0)
+            fn_med: Callable[[np.ndarray, int], np.ndarray] = (
+                np.nanmedian if self._nan_policy == "ignore" else _strict_median
+            )
+            result = fn_med(stack, 0)
 
         elif self._strategy == "min":
-            fn = np.nanmin if self._nan_policy == "ignore" else _strict_min
-            result = fn(stack, axis=0)
+            fn_min: Callable[[np.ndarray, int], np.ndarray] = (
+                np.nanmin if self._nan_policy == "ignore" else _strict_min
+            )
+            result = fn_min(stack, 0)
 
         elif self._strategy == "max":
-            fn = np.nanmax if self._nan_policy == "ignore" else _strict_max
-            result = fn(stack, axis=0)
+            fn_max: Callable[[np.ndarray, int], np.ndarray] = (
+                np.nanmax if self._nan_policy == "ignore" else _strict_max
+            )
+            result = fn_max(stack, 0)
 
         else:  # stack → default to mean
             result = np.nanmean(stack, axis=0)
@@ -256,8 +287,10 @@ class EnsembleSurfaceRouter(SurfaceRouter):
             resolution_deg=resolution_deg,
             backend=self.name,
             destination=destination,
-            metadata={"strategy": self._strategy,
-                       "backends": [r.name for r in self._routers]},
+            metadata={
+                "strategy": self._strategy,
+                "backends": [r.name for r in self._routers],
+            },
         )
 
 
@@ -271,15 +304,21 @@ def _align_to_common_grid(
     resolution_deg: float,
 ) -> list[TravelTimeSurface]:
     """Resample all surfaces to the same resolution and clip to common bbox."""
-    resampled = [s.resample(resolution_deg) if abs(s.resolution_deg - resolution_deg) / resolution_deg > 0.01
-                 else s for s in surfaces]
+    resampled = [
+        s.resample(resolution_deg)
+        if abs(s.resolution_deg - resolution_deg) / resolution_deg
+        > _RESOLUTION_REL_TOLERANCE
+        else s
+        for s in surfaces
+    ]
     # Find intersection bbox
     west = max(s.bbox.west for s in resampled)
     south = max(s.bbox.south for s in resampled)
     east = min(s.bbox.east for s in resampled)
     north = min(s.bbox.north for s in resampled)
 
-    from idd_travel_time.access.surface import BoundingBox  # noqa: PLC0415
+    from idd_travel_time.access.surface import BoundingBox
+
     common = BoundingBox(west=west, south=south, east=east, north=north)
     return [s.clip(common) for s in resampled]
 
@@ -287,22 +326,22 @@ def _align_to_common_grid(
 def _strict_mean(arr: np.ndarray, axis: int) -> np.ndarray:
     result = np.mean(arr, axis=axis)
     result[np.any(np.isnan(arr), axis=axis)] = np.nan
-    return result
+    return np.asarray(result)
 
 
 def _strict_median(arr: np.ndarray, axis: int) -> np.ndarray:
     result = np.median(arr, axis=axis)
     result[np.any(np.isnan(arr), axis=axis)] = np.nan
-    return result
+    return np.asarray(result)
 
 
 def _strict_min(arr: np.ndarray, axis: int) -> np.ndarray:
     result = np.min(arr, axis=axis)
     result[np.any(np.isnan(arr), axis=axis)] = np.nan
-    return result
+    return np.asarray(result)
 
 
 def _strict_max(arr: np.ndarray, axis: int) -> np.ndarray:
     result = np.max(arr, axis=axis)
     result[np.any(np.isnan(arr), axis=axis)] = np.nan
-    return result
+    return np.asarray(result)

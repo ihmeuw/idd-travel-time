@@ -186,7 +186,7 @@ class OsmnxRouter(Router):
         """Fetch named POIs within the isochrone polygon via osmnx."""
         try:
             polygon = isochrone_gdf.geometry.iloc[0]
-            tags = {"amenity": True, "name": True}
+            tags: dict[str, bool | str | list[str]] = {"amenity": True, "name": True}
             pois = ox.features_from_polygon(polygon, tags=tags)
             pois = pois[pois.geometry.geom_type == "Point"].copy()
 
