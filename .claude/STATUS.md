@@ -7,26 +7,29 @@ Updated: 2026-05-14
 - First-class support for informal-transit cities (no GTFS required).
 
 ## Recent steps
-- 2026-05-06: Repo scaffold — pyproject, CI, pre-commit, src layout.
-- 2026-05-06: Isochrone layer — models, transit profiles, routers (OSMnx / ORS / Google stub), `compute_batch`, `compute_parallel`.
-- 2026-05-06: IO + cache — GeoParquet result persistence, graph cache with per-key locking, geocoding with optional disk cache.
-- 2026-05-14: Access layer — `TravelTimeSurface`, OSMnx + friction-surface backends, `EnsembleSurfaceRouter`, benchmark/metrics modules.
-- 2026-05-14: Notebooks 01–13 and 348 tests (94% coverage claimed; not yet Bobby-verified).
-- 2026-05-14: Canonical-scaffold alignment — `setup_claude.sh --init`, settings/.gitignore/pre-commit patched, schema migration on `.claude/*.md`.
+- 2026-05-06: Scaffold + isochrone layer + IO/cache + tests.
+- 2026-05-14 (morning): Canonical-scaffold alignment.
+- 2026-05-14 (afternoon): Env stood up (conda + poetry), pushed to github.com/ihmeuw/idd-travel-time, 348 tests verified at 94% coverage.
+- 2026-05-14 (afternoon): Repaired osmnx 2.x compat surfaced by Nairobi smoke test (`graph_from_bbox` signature, WGS-84/UTM `nearest_nodes` bug, scikit-learn dep) — `3fa12dd`.
+- 2026-05-14 (afternoon): Whole-repo strict ruff/mypy cleanup with research-friendly per-file ignores — `9c0c1b8`.
+- 2026-05-14 (afternoon): All routing backends live-smoke-tested (Osmnx isochrone, Osmnx surface, ORS isochrone, Friction-uniform); only FrictionSurfaceRouter GeoTIFF path remains parked.
+- 2026-05-14 (afternoon): Promoted `ipykernel` and Poetry-non-interactive workaround to canonical STANDARDS.
+- 2026-05-14 (afternoon, late): Audited Claude-Project repo against STANDARDS §Output management — fixed six `/tmp` example paths and removed the `outputs/` / `data/` / `*.parquet` / `*.csv` lines from `.gitignore`; created canonical `/mnt/team/idd/pub/idd-travel-time/{maps,results}/`. — `9482fd3`.
 
 ## Next steps
-1. Smoke-test notebook 10 on a real city — the proof-of-principle gate.
-2. Run end-to-end benchmark (notebook 13) with real or GPS ground truth.
-3. Validate `FrictionSurfaceRouter` against a real MAP friction GeoTIFF.
-4. Stand up the conda env and run pytest to verify the 348-test / 94%-coverage claim.
-5. Implement `nearest_facility_surface()` — multi-source MCP/Dijkstra, O(grid) not O(N × grid).
+1. Build a top-down STANDARDS-compliance audit checklist for inherited Claude-Project repos (output paths, scratch use, source-tree-output, naming, embedded examples). Apply to other idd-* repos.
+2. `viz.compare([result_a, result_b], labels=...)` helper — overlay multiple results on one folium map with shared bounds, so notebook 01's walking-vs-driving comparison is legible.
+3. Real friction-GeoTIFF smoke test — download MAP global friction raster (or wait until team builds its own from OSM + speed assumptions).
+4. `nearest_facility_surface()` — multi-source MCP/Dijkstra, O(grid).
+5. Snap-or-buffer origin into OsmnxRouter's polygon — small UX fix for the known origin-not-in-polygon limitation.
+6. Run end-to-end benchmark (notebook 13) with real / GPS ground truth.
 
 ## Parking lot
+- Linked side-by-side ipyleaflet panels for true mode comparison (option B; full feature, not today).
+- ORS Collaborative-tier upgrade — academic, 5× rate-limit headroom.
 - Tile-aware surface computation — 8-neighbour border load.
 - Population raster integration (WorldPop).
 - SLURM / cluster batch entry point.
 - r5py integration for formal-transit cities (deferred — requires GTFS).
-- Output format for cluster runs (GeoParquet? GeoTIFF? Both?).
-- Tile border width tuning (depends on actual tile sizes chosen).
-- Ground-truth source decision (GPS surveys / OSRM / DHS clusters).
-- Multi-source `FrictionSurfaceRouter` via MCP `find_costs(starts=[…])` — enables nearest-facility surfaces.
+- Multi-source `FrictionSurfaceRouter` via MCP `find_costs(starts=[…])`.
+- Upstream Poetry interpreter-scan bug (workaround documented; could file upstream).
