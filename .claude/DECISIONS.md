@@ -2,6 +2,43 @@
 
 <!-- Append-only. Never delete or overwrite entries. -->
 
+## 2026-05-14: Canonical outputs go to /mnt/team/idd/pub/idd-travel-time/, not /tmp or source tree
+**Decision:** Library examples and notebooks write to
+`/mnt/team/idd/pub/idd-travel-time/{maps,results}/`. Never `/tmp`, never the
+source tree. `.gitignore` no longer hides outputs/data — they shouldn't be
+in the source tree to begin with.
+**Why:** STANDARDS §Output management was being silently violated in six
+places left over from Claude Project (3 CLI docstring examples, 3 notebook
+paths). Gitignoring `outputs/` and `*.parquet` in the repo documented the
+wrong pattern.
+**Revisit if:** A genuine use case requires writing outputs from the
+library to a location other than `/mnt/team/idd/pub/<project>/` — at which
+point update STANDARDS, not just this repo.
+
+## 2026-05-14: ipykernel is a required dep for every Python idd-* repo
+**Decision:** `[project.dependencies]` must include
+`ipykernel (>=7.0.0,<8.0.0)` for every Python idd-* repo. Promoted to
+canonical: `~/.claude/STANDARDS.md` §Environment and the scaffold-repo
+pyproject template.
+**Why:** Without it the conda env isn't selectable as a Jupyter kernel —
+notebooks fail with "kernel not found" or silently run against base,
+defeating the one-env-per-repo discipline.
+**Revisit if:** A repo legitimately has no notebooks — note the deviation
+in that repo's DECISIONS.md.
+
+## 2026-05-14: ORS smoke test passed; OSMnx/ORS isochrone shape divergence is real
+**Decision:** With an ORS API key wired up via `.env`,
+`OpenRouteServiceRouter` is integration-verified. For KNH 30-min walking,
+ORS returns a single 11.3 km² Polygon containing the origin; OSMnx returns
+a 5.5 km² MultiPolygon that does *not* contain the origin.
+**Why:** ORS uses its native isochrone API (proper alpha-shape on the
+road network); OSMnx in this library uses 50 m node-buffer-union,
+producing under-approximated polygons with disconnected pockets. The ~2×
+area gap and origin-containment difference are substantive, not bugs.
+**Revisit if:** Users surface confusion about which is "right" — at that
+point the library should pick a default and explain the trade-off, or
+expose both via `viz.compare`.
+
 ## 2026-05-14: Backends require live-data smoke tests, not just mocked unit tests
 **Decision:** Every router / surface-router backend (Osmnx, ORS, MAP friction,
 ensemble) must have a live-data smoke test exercised before any "this works"
