@@ -6,7 +6,7 @@ Usage — by coordinates
         --lat -1.2864 --lon 36.8172 \\
         --mode walking \\
         --duration 30 \\
-        --output /tmp/nairobi_walking.html
+        --output /mnt/team/idd/pub/idd-travel-time/maps/nairobi_walking.html
 
 Usage — by place name
 ---------------------
@@ -14,7 +14,7 @@ Usage — by place name
         --place "Kenyatta National Hospital, Nairobi" \\
         --mode walking \\
         --duration 20 \\
-        --output /tmp/knh_walking.html
+        --output /mnt/team/idd/pub/idd-travel-time/maps/knh_walking.html
 
     run-isochrone \\
         --place "Lagos Island" \\
@@ -23,7 +23,7 @@ Usage — by place name
         --transit-preset informal_minibus \\
         --time-context rush_hour \\
         --duration 45 \\
-        --output /tmp/lagos_transit.html
+        --output /mnt/team/idd/pub/idd-travel-time/maps/lagos_transit.html
 """
 
 from __future__ import annotations

@@ -46,11 +46,7 @@ env/
 config/*
 !config/.gitkeep
 
-# Repo-specific data and outputs
-*.parquet
-*.csv
-data/
-outputs/
+# osmnx HTTP cache (regenerable, downloaded on demand)
 cache/
 
 # notebooks — keep files, ignore output cells
