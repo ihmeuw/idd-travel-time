@@ -33,7 +33,8 @@ Or in development mode:
 ```bash
 git clone https://github.com/ihmeuw/idd-travel-time
 cd idd-travel-time
-poetry install
+uv venv --python 3.12        # .venv on the uv-managed CPython
+uv sync --all-extras         # runtime + dev + basemaps extra
 ```
 
 ---
@@ -225,11 +226,20 @@ viz.save(result, "map.html", layers=[VizLayer.ISOCHRONE])
 
 ## Development
 
+Local dev uses a project `.venv` with a uv-managed interpreter — no conda
+anywhere in the Python story. uv owns the interpreter and every package
+(including installing idd-travel-time itself editable — no `PYTHONPATH=src`).
+One-time setup:
+
 ```bash
-poetry install --with dev
-pre-commit install
-pytest
+uv venv --python 3.12        # .venv on the uv-managed CPython
+uv sync --all-extras         # runtime + dev + basemaps extra
+.venv/bin/pre-commit install
 ```
+
+Run code via `.venv/bin/python` by absolute path (Slurm scripts do exactly
+this — no activation of any kind); `source .venv/bin/activate` is optional
+for interactive shells. Tests: `.venv/bin/python -m pytest`.
 
 ### What has not been decided yet
 
@@ -364,10 +374,11 @@ viz.save_static(result, "map.pdf", dpi=300)
 ```
 
 Requires `contextily` for tiled basemaps (optional — degrades gracefully to
-a grey background if not installed):
+a grey background if not installed). It ships as the `basemaps` extra:
 
 ```bash
-pip install contextily
+pip install "idd-travel-time[basemaps]"   # consumers
+uv sync --all-extras                       # development .venv
 ```
 
 ---
