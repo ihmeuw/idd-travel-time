@@ -22,6 +22,8 @@ dependencies = [
     "scikit-image>=0.22",
     "affine>=2.4",
     "networkx>=3.6",
+    "pyyaml>=6",      # paths.yaml loader (STANDARDS §Path safety)
+    "idd-tools",      # output-node contract: idd_tools.versions (bare name; uv.lock pins the commit)
 ]
 
 [project.optional-dependencies]
@@ -40,7 +42,13 @@ dev = [
     "pytest-cov",
     "ruff>=0.9",
     "ipykernel>=7",
+    "types-PyYAML",
 ]
+
+[tool.uv.sources]
+# Cross-repo idd-* deps pin `main`; uv.lock records the commit.
+# Bump: uv lock --upgrade-package idd-tools
+idd-tools = { git = "ssh://git@github.com/ihmeuw/idd-tools.git", branch = "main" }
 
 [build-system]
 requires = ["uv_build>=0.11,<0.12"]

@@ -1,0 +1,9 @@
+# Per-machine absolute roots. Copy to paths.yaml (gitignored) and edit.
+#
+# project_output_root: the repo's output node root. Each subdirectory is a
+# versioned component ("node") managed by idd-versions (idd-tools):
+#   <project_output_root>/maps/working/     rendered maps (HTML, PNG, PDF)
+#   <project_output_root>/results/working/  result parquet dirs, surfaces, GeoTIFFs
+# Runs write to working/ (or scratch/<label>/ for tests); snapshots come
+# only from `idd-versions <project_output_root>/<node> freeze "<why>"`.
+project_output_root: /your/cluster/path/idd-travel-time

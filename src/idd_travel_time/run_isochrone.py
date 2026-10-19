@@ -5,8 +5,11 @@ Usage — by coordinates
     run-isochrone \\
         --lat -1.2864 --lon 36.8172 \\
         --mode walking \\
-        --duration 30 \\
-        --output /mnt/team/idd/pub/idd-travel-time/maps/nairobi_walking.html
+        --duration 30
+    # No --output: the map goes to <maps node>/working/<result_id>.html, where the
+    # maps node is <project_output_root>/maps (paths.yaml). --scratch LABEL writes
+    # to maps/scratch/LABEL/ instead; --freeze / --current snapshot working/ on
+    # success (idd-versions contract). --output PATH writes exactly there.
 
 Usage — by place name
 ---------------------
@@ -14,7 +17,7 @@ Usage — by place name
         --place "Kenyatta National Hospital, Nairobi" \\
         --mode walking \\
         --duration 20 \\
-        --output /mnt/team/idd/pub/idd-travel-time/maps/knh_walking.html
+        --output knh_walking.html
 
     run-isochrone \\
         --place "Lagos Island" \\
@@ -23,7 +26,7 @@ Usage — by place name
         --transit-preset informal_minibus \\
         --time-context rush_hour \\
         --duration 45 \\
-        --output /mnt/team/idd/pub/idd-travel-time/maps/lagos_transit.html
+        --scratch lagos-probe
 """
 
 from __future__ import annotations
@@ -33,13 +36,18 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import click
+from idd_tools.versions import finish_if_requested, resolve_target, versions_options
 
 from idd_travel_time.constants import TimeContext, TransportMode, VizLayer
+from idd_travel_time.io.parquet import result_id
 from idd_travel_time.isochrone import compute
 from idd_travel_time.models import TransitProfile, TravelTimeRequest
+from idd_travel_time.paths import NODE_MAPS, node_dir
 from idd_travel_time.viz import save as save_map
 
 if TYPE_CHECKING:
+    from idd_tools.versions import VersionsOptions
+
     from idd_travel_time.routers.base import Router
 
 _VALID_MODES = [m.value for m in TransportMode]
@@ -129,10 +137,12 @@ def _build_router(router_name: str) -> Router | None:
 )
 @click.option(
     "--output",
-    required=True,
+    default=None,
     type=click.Path(dir_okay=False, writable=True),
-    help="Output HTML file path.",
+    help="Output HTML file. Default: <maps node>/working/<result_id>.html "
+    "(paths.yaml project_output_root). The node flags below apply only to the default.",
 )
+@versions_options
 def main(
     place: str | None,
     country_hint: str | None,
@@ -144,7 +154,8 @@ def main(
     transit_preset: str | None,
     router: str,
     layers: tuple[str, ...],
-    output: str,
+    output: str | None,
+    versions: VersionsOptions,
 ) -> None:
     """Compute a travel-time isochrone and save it as an interactive HTML map.
 
@@ -157,6 +168,15 @@ def main(
         sys.exit(1)
     if not place and (lat is None or lon is None):
         click.echo("Error: provide either --place or both --lat and --lon.", err=True)
+        sys.exit(1)
+    if output is not None and (
+        versions.scratch is not None or versions.finishes or versions.clean
+    ):
+        click.echo(
+            "Error: --output names an explicit file; --scratch, --freeze, --current and "
+            "--clean apply only to the default node location.",
+            err=True,
+        )
         sys.exit(1)
 
     if place:
@@ -199,6 +219,15 @@ def main(
         viz_layers=viz_layers,
     )
 
+    # --- output location: explicit file, or the maps node's slot ---
+    if output is None:
+        maps_node = node_dir(NODE_MAPS)
+        # resolve_target runs the launch-time pre-flights, so a bad flag
+        # combination is refused before any compute.
+        out_path = resolve_target(maps_node, versions) / f"{result_id(request)}.html"
+    else:
+        out_path = Path(output)
+
     active_router = _build_router(router)
     click.echo(
         f"Computing {duration}-min {mode} isochrone from ({lat:.6f}, {lon:.6f}) "
@@ -206,8 +235,10 @@ def main(
     )
 
     result = compute(request, router=active_router)
-    out_path = save_map(result, Path(output), layers=viz_layers)
-    click.echo(f"Saved → {out_path}")
+    saved = save_map(result, out_path, layers=viz_layers)
+    click.echo(f"Saved → {saved}")
+    if output is None:
+        finish_if_requested(maps_node, versions)
 
 
 if __name__ == "__main__":
