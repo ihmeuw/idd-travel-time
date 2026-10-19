@@ -5,6 +5,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: webfactory/ssh-agent@v0.10.0       # idd-tools is an ssh:// git source
+        with:
+          ssh-private-key: ${{ secrets.IDD_CI_DEPLOY_KEYS }}
       - uses: astral-sh/setup-uv@v6
         with: { python-version: '3.12' }
       # No extras: the only extra (basemaps -> contextily) is lazy-imported

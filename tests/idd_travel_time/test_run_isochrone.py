@@ -178,3 +178,59 @@ class TestCliLayerSelection:
         ):
             result = runner.invoke(main, args)
         assert result.exit_code == 0, result.output
+
+
+def _node_args() -> list[str]:
+    """Origin + mode only: no --output, so the maps node's slot is used."""
+    return ["--lat", "-1.2864", "--lon", "36.8172", "--mode", "walking"]
+
+
+class TestDefaultOutputLocation:
+    """Without --output the map goes to the maps node (idd-versions contract)."""
+
+    def test_writes_to_working_slot(self, runner: CliRunner, tmp_path: Path) -> None:
+        node = tmp_path / "maps"
+        with (
+            patch("idd_travel_time.run_isochrone.compute", side_effect=_fake_result),
+            patch("idd_travel_time.run_isochrone.node_dir", return_value=node),
+        ):
+            result = runner.invoke(main, _node_args())
+        assert result.exit_code == 0, result.output
+        written = list((node / "working").glob("*.html"))
+        assert len(written) == 1
+        assert str(written[0]) in result.output
+
+    def test_scratch_label_targets_scratch_dir(
+        self, runner: CliRunner, tmp_path: Path
+    ) -> None:
+        node = tmp_path / "maps"
+        with (
+            patch("idd_travel_time.run_isochrone.compute", side_effect=_fake_result),
+            patch("idd_travel_time.run_isochrone.node_dir", return_value=node),
+        ):
+            result = runner.invoke(main, [*_node_args(), "--scratch", "probe"])
+        assert result.exit_code == 0, result.output
+        assert list((node / "scratch" / "probe").glob("*.html"))
+        assert not (node / "working").exists()
+
+    def test_output_with_node_flag_fails(
+        self, runner: CliRunner, output_file: Path
+    ) -> None:
+        result = runner.invoke(main, [*_base_args(output_file), "--scratch", "probe"])
+        assert result.exit_code == 1
+        assert "--output names an explicit file" in result.output
+
+    def test_freeze_without_description_is_refused_before_compute(
+        self, runner: CliRunner, tmp_path: Path
+    ) -> None:
+        node = tmp_path / "maps"
+        with (
+            patch(
+                "idd_travel_time.run_isochrone.compute", side_effect=_fake_result
+            ) as compute,
+            patch("idd_travel_time.run_isochrone.node_dir", return_value=node),
+        ):
+            result = runner.invoke(main, [*_node_args(), "--freeze"])
+        assert result.exit_code == 2  # click.UsageError from the idd-tools pre-flight
+        assert "--description" in result.output
+        compute.assert_not_called()

@@ -35,7 +35,26 @@ git clone https://github.com/ihmeuw/idd-travel-time
 cd idd-travel-time
 uv venv --python 3.12        # .venv on the uv-managed CPython
 uv sync --all-extras         # runtime + dev + basemaps extra
+cp paths.yaml.example paths.yaml   # gitignored; set project_output_root for this machine
 ```
+
+`idd-tools` is a git dependency (`ssh://git@github.com/ihmeuw/idd-tools.git`,
+pinned to `main` in `uv.lock`), so `uv sync` needs read access to that repo.
+
+### Where outputs go
+
+`project_output_root` (from `paths.yaml`) holds one directory per *node*:
+`maps/` (rendered maps) and `results/` (result parquet directories, surfaces,
+GeoTIFFs). Code writes only to a node's `working/` slot, obtained from
+`idd_travel_time.paths.working_dir("maps")` / `working_dir("results")`, or to
+`scratch/<label>/` for throwaway runs. A snapshot is made only by hand:
+
+```bash
+idd-versions <project_output_root>/maps freeze "why this snapshot exists"
+```
+
+(`idd-versions` comes with idd-tools; `status`, `promote`, `label`, `gc` are
+the other subcommands.)
 
 ---
 
@@ -157,12 +176,14 @@ concurrency externally.
 ## CLI
 
 ```bash
-# Walking isochrone
+# Walking isochrone — no --output: written to <maps node>/working/<result_id>.html
 run-isochrone \
     --lat -1.3006 --lon 36.8073 \
     --mode walking \
-    --duration 30 \
-    --output map.html
+    --duration 30
+
+# Same, as a throwaway run under <maps node>/scratch/probe/
+run-isochrone --lat -1.3006 --lon 36.8073 --mode walking --scratch probe
 
 # Informal transit, rush hour, specific layers
 run-isochrone \
@@ -185,8 +206,15 @@ Options:
   --transit-preset TEXT           Required when --mode=transit
   --router [auto|ors|osmnx]       [default: auto]
   --layers TEXT                   Repeat for multiple layers  [default: all]
-  --output PATH                   Output HTML file  [required]
+  --output PATH                   Output HTML file  [default: <maps node>/working/<result_id>.html]
+  --scratch LABEL                 Write to <maps node>/scratch/LABEL/ instead (never frozen)
+  --freeze / --current            On success, freeze working/ (and promote with --current);
+                                  needs --description
+  --label, --tag, --allow-dirty, --clean   idd-versions launcher flags (idd-tools)
 ```
+
+The node flags apply only to the default location; with `--output` the map is
+written exactly there and nothing is frozen.
 
 ---
 
@@ -217,10 +245,13 @@ viz.save(result, "map.html", layers=[VizLayer.ISOCHRONE])
 
 ## Notebooks
 
+Vignettes live in `notebooks/vignettes/`; `notebooks/scratch/` is for
+exploration and is never authoritative.
+
 | Notebook | Description |
 |---|---|
-| `notebooks/01_walkthrough.ipynb` | Basic usage: walking isochrone, all four layers, save to HTML |
-| `notebooks/02_global_cities.ipynb` | Informal transit in Lagos, Nairobi, Kampala, Jakarta; batch computation; off-peak vs rush-hour comparison |
+| `notebooks/vignettes/01_walkthrough.ipynb` | Basic usage: walking isochrone, all four layers, save to HTML |
+| `notebooks/vignettes/02_global_cities.ipynb` | Informal transit in Lagos, Nairobi, Kampala, Jakarta; batch computation; off-peak vs rush-hour comparison |
 
 ---
 
@@ -257,6 +288,7 @@ for interactive shells. Tests: `.venv/bin/python -m pytest`.
 ```
 src/idd_travel_time/
 ├── constants.py            enumerations, column names, numeric defaults
+├── paths.py                paths.yaml loader; node slots working_dir()/scratch_dir() via idd-tools
 ├── models.py               TravelTimeRequest, TravelTimeResult, TransitProfile
 ├── profiles/
 │   └── presets.py          five named TransitProfile presets + registry
