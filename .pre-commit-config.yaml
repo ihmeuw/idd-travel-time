@@ -1,15 +1,20 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.0
+    # Pinned to the env's ruff (0.16.2) so hook and local results agree
+    # (STANDARDS §Pre-commit: aligned revs reproduce locally).
+    rev: v0.16.2
     hooks:
-      - id: ruff
+      - id: ruff-check
         args: [--fix]
       - id: ruff-format
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.15.0
+    # Pinned to the env's mypy (2.3.0), same reasoning as ruff above.
+    rev: v2.3.0
     hooks:
       - id: mypy
+        # The pre-commit mypy runs in an isolated env — it cannot see the
+        # project env's packages. List the type stubs mypy needs here.
         additional_dependencies: [types-requests]
 
   - repo: https://github.com/kynan/nbstripout
@@ -26,3 +31,13 @@ repos:
       - id: check-merge-conflict
       - id: check-ast
       - id: check-added-large-files
+
+  - repo: local
+    hooks:
+      - id: no-absolute-paths
+        name: block absolute filesystem paths
+        # --diff-filter=d: deviation from the STANDARDS entry. Without it a staged
+        # deletion (e.g. untracking .claude/) is scanned on disk and blocks the commit.
+        entry: bash -c 'git diff --cached --name-only --diff-filter=d -z | grep -zvE "\.pre-commit-config\.yaml$" | xargs -0 -r grep -lE "(/ihme/|/snfs1/|/home/j/|/mnt/share/|^[A-Z]:\\\\)" 2>/dev/null | (! grep .)'
+        language: system
+        pass_filenames: false

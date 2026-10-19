@@ -5,8 +5,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v6
         with: { python-version: '3.12' }
-      - run: pip install ruff mypy
-      - run: ruff check src/ tests/
-      - run: mypy src/
+      # No extras: the only extra (basemaps -> contextily) is lazy-imported
+      # and mypy runs with ignore_missing_imports, so the base env suffices.
+      - run: uv sync
+      - run: uv run ruff check src/ tests/
+      - run: uv run mypy src/

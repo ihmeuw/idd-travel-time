@@ -35,7 +35,7 @@ def make_isochrone_gdf(
     mode          : str
     time_context  : str
     """
-    df = pd.DataFrame(  # noqa: PD901  # transient — wrapped as GeoDataFrame on return
+    df = pd.DataFrame(  # transient — wrapped as GeoDataFrame on return
         {
             COL_GEOMETRY: [polygon],
             COL_DURATION_MIN: pd.array([request.duration_minutes], dtype="int32"),
@@ -64,7 +64,7 @@ def make_poi_gdf(
         msg = "points, names, and amenity_types must have the same length"
         raise ValueError(msg)
     geometries = [Point(lon, lat) for lon, lat in points]
-    df = pd.DataFrame(  # noqa: PD901  # transient — wrapped as GeoDataFrame on return
+    df = pd.DataFrame(  # transient — wrapped as GeoDataFrame on return
         {
             COL_GEOMETRY: geometries,
             COL_POI_NAME: pd.array(names, dtype="string"),

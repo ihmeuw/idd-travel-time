@@ -28,6 +28,9 @@ from folium.plugins import HeatMap
 from idd_travel_time.constants import VizLayer
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+    from typing import Any
+
     from idd_travel_time.models import TravelTimeResult
 
 # ---------------------------------------------------------------------------
@@ -235,7 +238,11 @@ def _add_heatmap(m: folium.Map, result: TravelTimeResult) -> None:
         return
 
     layer = folium.FeatureGroup(name="Heatmap", show=False)
-    HeatMap(
+    # folium.plugins.HeatMap ships without annotations. Calling it through a
+    # typed alias satisfies mypy --strict in both the project env and the
+    # stub-less pre-commit env; a `type: ignore` would be flagged unused there.
+    heat_map: Callable[..., Any] = HeatMap
+    heat_map(
         heat_points,
         radius=_HEATMAP_RADIUS,
         blur=_HEATMAP_BLUR,

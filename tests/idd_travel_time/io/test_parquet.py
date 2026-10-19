@@ -338,7 +338,7 @@ class TestErrors:
         result = _make_result()
         out = write_result(result, tmp_path)
         (out / "meta.json").unlink()
-        with pytest.raises(FileNotFoundError, match="meta.json"):
+        with pytest.raises(FileNotFoundError, match=r"meta.json"):
             read_result(out)
 
     def test_read_wrong_schema_version_raises(self, tmp_path: Path) -> None:

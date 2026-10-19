@@ -286,7 +286,7 @@ def _add_split(
     """Add a ``split`` column (``"train"`` / ``"test"``) to the GDF."""
     rng = np.random.default_rng(random_seed)
     n = len(gdf)
-    n_test = max(1, int(round(n * test_fraction)))
+    n_test = max(1, round(n * test_fraction))
     test_idx = rng.choice(n, size=n_test, replace=False)
     split = np.full(n, "train", dtype=object)
     split[test_idx] = "test"

@@ -63,6 +63,9 @@ ignore = [
     "TC001",    # typing-only first-party import — not worth the TYPE_CHECKING dance
     "TC003",    # typing-only stdlib import — same
     "RUF001",   # ambiguous unicode — we don't intentionally use confusables
+    "CPY",      # copyright headers — not used in idd-* repos (CPY001 fires under ALL on current ruff)
+    "PLC0415",  # import-outside-top-level — optional/heavy backends (osmnx, rasterio, skimage, contextily) are lazy-imported by design
+    "UP042",    # (str, Enum) → StrEnum changes str()/format() of members, which would silently alter labels and paths
 ]
 
 [tool.ruff.lint.pylint]
@@ -84,7 +87,7 @@ max-args = 10
     "RUF003",   # tests don't author user-facing comment content
     "ERA001",   # commented test code can be reference / debug history
 ]
-"src/idd_travel_time/run_isochrone.py" = ["PLR0913"]  # CLI: @click.option decorators count as args
+"src/idd_travel_time/run_isochrone.py" = ["PLR0913", "PLR0917"]  # CLI: @click.option decorators count as (positional) args
 "**/io/__init__.py" = ["A005"]  # `io` is the namespaced package name, not stdlib shadowing in practice
 
 [tool.mypy]
