@@ -59,7 +59,7 @@ class TestTransitProfile:
             )
 
     def test_invalid_speed_lower_exceeds_upper(self) -> None:
-        with pytest.raises(ValueError, match="lower bound.*<= upper bound"):
+        with pytest.raises(ValueError, match=r"lower bound.*<= upper bound"):
             TransitProfile(
                 typical_speed_kph=(30.0, 10.0),
                 coverage=TransitCoverage.ROAD_NETWORK,

@@ -25,7 +25,10 @@ venv/
 env/
 
 # IDE
-.vscode/
+# Commit the VSCode workspace settings (relative interpreter pin only);
+# ignore the rest.
+.vscode/*
+!.vscode/settings.json
 .idea/
 *.swp
 .DS_Store
@@ -42,6 +45,10 @@ env/
 .env.*
 !.env.example
 
+# Local absolute paths and R env — never commit (STANDARDS §Path safety)
+paths.yaml
+.Renviron
+
 # Generated config — keep the directory, ignore its contents
 config/*
 !config/.gitkeep
@@ -49,5 +56,5 @@ config/*
 # osmnx HTTP cache (regenerable, downloaded on demand)
 cache/
 
-# notebooks — keep files, ignore output cells
-# (use nbstripout via pre-commit instead of blanket ignore)
+# Claude Code working files — local-only, not part of git history.
+.claude/

@@ -27,7 +27,7 @@ across backends — a simple measure of inter-model spread.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
 
@@ -261,14 +261,18 @@ class EnsembleSurfaceRouter(SurfaceRouter):
             result = fn_med(stack, 0)
 
         elif self._strategy == "min":
-            fn_min: Callable[[np.ndarray, int], np.ndarray] = (
-                np.nanmin if self._nan_policy == "ignore" else _strict_min
+            # cast: mypy >= 2 joins the overloaded np.nanmin with the plain
+            # helper to a bare `function` and rejects the Callable annotation.
+            fn_min = cast(
+                "Callable[[np.ndarray, int], np.ndarray]",
+                np.nanmin if self._nan_policy == "ignore" else _strict_min,
             )
             result = fn_min(stack, 0)
 
         elif self._strategy == "max":
-            fn_max: Callable[[np.ndarray, int], np.ndarray] = (
-                np.nanmax if self._nan_policy == "ignore" else _strict_max
+            fn_max = cast(
+                "Callable[[np.ndarray, int], np.ndarray]",
+                np.nanmax if self._nan_policy == "ignore" else _strict_max,
             )
             result = fn_max(stack, 0)
 

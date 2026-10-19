@@ -190,7 +190,7 @@ class FrictionSurfaceRouter(SurfaceRouter):
         self,
         bbox: BoundingBox,
         resolution_deg: float,
-    ) -> tuple[np.ndarray, object, float]:
+    ) -> tuple[np.ndarray, Affine, float]:
         """Return (friction_array, affine_transform, actual_resolution_deg).
 
         If speed_kph_override is set, builds a uniform friction array at
