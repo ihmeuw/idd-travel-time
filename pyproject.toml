@@ -24,15 +24,22 @@ dependencies = [
     "networkx>=3.6",
     "pyyaml>=6",      # paths.yaml loader (STANDARDS §Path safety)
     "idd-tools",      # output-node contract: idd_tools.versions (bare name; uv.lock pins the commit)
+    "pycountry>=24.6", # ISO2 (Overture divisions) -> ISO3 (Weiss 2020 road-speed table)
 ]
 
 [project.optional-dependencies]
 # static_viz lazy-imports contextily for tiled basemaps and silently
 # degrades without it — opt in when basemap rendering is wanted.
 basemaps = ["contextily>=1.6"]
+# Cluster orchestration for the friction-surface fan-out (STANDARDS §Environment:
+# jobmon is an optional extra, never core; CI syncs without it). On the cluster:
+#   uv sync --extra jobmon
+jobmon = ["idd-tools[jobmon]"]
 
 [project.scripts]
 run-isochrone = "idd_travel_time.run_isochrone:main"
+build-friction = "idd_travel_time.friction.cli:main"
+fetch-fabdem = "idd_travel_time.elevation.cli:main"
 
 [dependency-groups]
 dev = [
@@ -49,6 +56,15 @@ dev = [
 # Cross-repo idd-* deps pin `main`; uv.lock records the commit.
 # Bump: uv lock --upgrade-package idd-tools
 idd-tools = { git = "ssh://git@github.com/ihmeuw/idd-tools.git", branch = "main" }
+# Belt-and-braces: force the internal jobmon installer to the ihme index even
+# if index order ever changes (scaffold-repo template, verbatim).
+jobmon_installer_ihme = { index = "ihme" }
+
+# IHME artifactory, consulted before PyPI for internal names (scaffold-repo
+# template, verbatim). Only the jobmon extra resolves from it.
+[[tool.uv.index]]
+name = "ihme"
+url = "https://artifactory.ihme.washington.edu/artifactory/api/pypi/pypi-shared/simple"
 
 [build-system]
 requires = ["uv_build>=0.11,<0.12"]
@@ -112,7 +128,7 @@ disallow_incomplete_defs = false
 disallow_untyped_decorators = false
 
 [[tool.mypy.overrides]]
-module = "idd_travel_time.run_isochrone"
+module = ["idd_travel_time.run_isochrone", "idd_travel_time.friction.cli", "idd_travel_time.elevation.cli"]
 # click's @command/@option decorators don't preserve function signatures —
 # disabling the rule here is cleaner than scattering # type: ignore on every
 # decorator.
