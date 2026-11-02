@@ -1,0 +1,2249 @@
+gaul,iso3,country_name,osm_class,osm_tag_code,speed_kph
+0,-,Global Default,motorway,1,105
+0,-,Global Default,trunk,2,80
+0,-,Global Default,railroad,3,30
+0,-,Global Default,primary,4,65
+0,-,Global Default,secondary,5,60
+0,-,Global Default,tertiary,6,55
+0,-,Global Default,motorway link,7,70
+0,-,Global Default,primary link,8,55
+0,-,Global Default,unclassified,9,55
+0,-,Global Default,road,10,30
+0,-,Global Default,residential,11,40
+0,-,Global Default,service,12,30
+0,-,Global Default,track,13,40
+0,-,Global Default,pedestrian,14,25
+0,-,Global Default,other,15,45
+3,ALB,Albania,motorway,1,110
+3,ALB,Albania,trunk,2,90
+3,ALB,Albania,primary,4,40
+3,ALB,Albania,secondary,5,40
+3,ALB,Albania,tertiary,6,40
+3,ALB,Albania,motorway link,7,40
+3,ALB,Albania,primary link,8,30
+3,ALB,Albania,unclassified,9,30
+3,ALB,Albania,road,10,30
+3,ALB,Albania,residential,11,30
+3,ALB,Albania,service,12,10
+3,ALB,Albania,track,13,10
+3,ALB,Albania,pedestrian,14,10
+3,ALB,Albania,other,15,35
+4,DZA,Algeria,motorway,1,100
+4,DZA,Algeria,trunk,2,60
+4,DZA,Algeria,primary,4,50
+4,DZA,Algeria,secondary,5,50
+4,DZA,Algeria,tertiary,6,40
+4,DZA,Algeria,motorway link,7,40
+4,DZA,Algeria,primary link,8,30
+4,DZA,Algeria,unclassified,9,40
+4,DZA,Algeria,road,10,45
+4,DZA,Algeria,residential,11,40
+4,DZA,Algeria,service,12,20
+4,DZA,Algeria,track,13,40
+4,DZA,Algeria,pedestrian,14,20
+4,DZA,Algeria,other,15,40
+6,SDN,Sudan,trunk,2,93
+6,SDN,Sudan,primary,4,70
+6,SDN,Sudan,secondary,5,70
+6,SDN,Sudan,tertiary,6,40
+6,SDN,Sudan,unclassified,9,50
+6,SDN,Sudan,residential,11,40
+6,SDN,Sudan,service,12,30
+6,SDN,Sudan,other,15,30
+7,AND,Andorra,trunk,2,25
+7,AND,Andorra,primary,4,60
+7,AND,Andorra,secondary,5,50
+7,AND,Andorra,tertiary,6,50
+7,AND,Andorra,primary link,8,60
+7,AND,Andorra,unclassified,9,30
+7,AND,Andorra,residential,11,50
+7,AND,Andorra,service,12,20
+7,AND,Andorra,track,13,30
+7,AND,Andorra,other,15,50
+8,AGO,Angola,motorway,1,80
+8,AGO,Angola,trunk,2,60
+8,AGO,Angola,primary,4,40
+8,AGO,Angola,secondary,5,50
+8,AGO,Angola,tertiary,6,50
+8,AGO,Angola,motorway link,7,40
+8,AGO,Angola,primary link,8,30
+8,AGO,Angola,unclassified,9,40
+8,AGO,Angola,residential,11,30
+8,AGO,Angola,service,12,20
+8,AGO,Angola,track,13,50
+8,AGO,Angola,other,15,40
+9,AIA,Anguilla,primary,4,30
+9,AIA,Anguilla,tertiary,6,25
+9,AIA,Anguilla,track,13,30
+11,ATG,Antigua and Barbuda,primary,4,20
+11,ATG,Antigua and Barbuda,secondary,5,26.0934
+11,ATG,Antigua and Barbuda,tertiary,6,20
+11,ATG,Antigua and Barbuda,unclassified,9,20
+11,ATG,Antigua and Barbuda,residential,11,32.1868
+11,ATG,Antigua and Barbuda,service,12,32.1868
+12,ARG,Argentina,motorway,1,100
+12,ARG,Argentina,trunk,2,80
+12,ARG,Argentina,primary,4,60
+12,ARG,Argentina,secondary,5,60
+12,ARG,Argentina,tertiary,6,40
+12,ARG,Argentina,motorway link,7,40
+12,ARG,Argentina,primary link,8,40
+12,ARG,Argentina,unclassified,9,40
+12,ARG,Argentina,road,10,20
+12,ARG,Argentina,residential,11,40
+12,ARG,Argentina,service,12,40
+12,ARG,Argentina,track,13,40
+12,ARG,Argentina,pedestrian,14,40
+12,ARG,Argentina,other,15,40
+13,ARM,Armenia,trunk,2,60
+13,ARM,Armenia,primary,4,60
+13,ARM,Armenia,secondary,5,60
+13,ARM,Armenia,tertiary,6,60
+13,ARM,Armenia,primary link,8,60
+13,ARM,Armenia,unclassified,9,20
+13,ARM,Armenia,residential,11,40
+13,ARM,Armenia,service,12,20
+13,ARM,Armenia,track,13,20
+13,ARM,Armenia,other,15,40
+14,ABW,Aruba,primary,4,60
+14,ABW,Aruba,secondary,5,60
+14,ABW,Aruba,tertiary,6,35
+14,ABW,Aruba,unclassified,9,55
+14,ABW,Aruba,residential,11,30
+14,ABW,Aruba,service,12,20
+17,AUS,Australia,motorway,1,100
+17,AUS,Australia,trunk,2,70
+17,AUS,Australia,primary,4,60
+17,AUS,Australia,secondary,5,60
+17,AUS,Australia,tertiary,6,60
+17,AUS,Australia,motorway link,7,80
+17,AUS,Australia,primary link,8,60
+17,AUS,Australia,unclassified,9,100
+17,AUS,Australia,road,10,40
+17,AUS,Australia,residential,11,50
+17,AUS,Australia,service,12,40
+17,AUS,Australia,track,13,60
+17,AUS,Australia,pedestrian,14,40
+17,AUS,Australia,other,15,50
+18,AUT,Austria,motorway,1,130
+18,AUT,Austria,trunk,2,100
+18,AUT,Austria,primary,4,60
+18,AUT,Austria,secondary,5,50
+18,AUT,Austria,tertiary,6,50
+18,AUT,Austria,motorway link,7,80
+18,AUT,Austria,primary link,8,50
+18,AUT,Austria,unclassified,9,50
+18,AUT,Austria,road,10,50
+18,AUT,Austria,residential,11,30
+18,AUT,Austria,service,12,30
+18,AUT,Austria,track,13,30
+18,AUT,Austria,pedestrian,14,10
+18,AUT,Austria,other,15,30
+19,AZE,Azerbaijan,motorway,1,110
+19,AZE,Azerbaijan,trunk,2,70
+19,AZE,Azerbaijan,primary,4,60
+19,AZE,Azerbaijan,secondary,5,60
+19,AZE,Azerbaijan,tertiary,6,60
+19,AZE,Azerbaijan,motorway link,7,80
+19,AZE,Azerbaijan,primary link,8,40
+19,AZE,Azerbaijan,unclassified,9,20
+19,AZE,Azerbaijan,road,10,20
+19,AZE,Azerbaijan,residential,11,20
+19,AZE,Azerbaijan,service,12,20
+19,AZE,Azerbaijan,track,13,50
+19,AZE,Azerbaijan,other,15,60
+20,BHS,Bahamas,primary,4,48.2802
+20,BHS,Bahamas,secondary,5,56.3269
+20,BHS,Bahamas,tertiary,6,48.2802
+20,BHS,Bahamas,primary link,8,40.2335
+20,BHS,Bahamas,unclassified,9,31.0934
+20,BHS,Bahamas,residential,11,40.2335
+20,BHS,Bahamas,service,12,50
+20,BHS,Bahamas,track,13,30
+20,BHS,Bahamas,other,15,72.4203
+21,BHR,Bahrain,motorway,1,100
+21,BHR,Bahrain,trunk,2,100
+21,BHR,Bahrain,primary,4,80
+21,BHR,Bahrain,secondary,5,50
+21,BHR,Bahrain,tertiary,6,50
+21,BHR,Bahrain,motorway link,7,50
+21,BHR,Bahrain,primary link,8,50
+21,BHR,Bahrain,unclassified,9,50
+21,BHR,Bahrain,residential,11,30
+21,BHR,Bahrain,service,12,30
+21,BHR,Bahrain,other,15,20
+23,BGD,Bangladesh,trunk,2,60
+23,BGD,Bangladesh,primary,4,50
+23,BGD,Bangladesh,secondary,5,40
+23,BGD,Bangladesh,tertiary,6,40
+23,BGD,Bangladesh,primary link,8,40
+23,BGD,Bangladesh,unclassified,9,30
+23,BGD,Bangladesh,road,10,20
+23,BGD,Bangladesh,residential,11,20
+23,BGD,Bangladesh,service,12,20
+23,BGD,Bangladesh,track,13,32.1868
+23,BGD,Bangladesh,pedestrian,14,30
+23,BGD,Bangladesh,other,15,30
+24,BRB,Barbados,trunk,2,80
+24,BRB,Barbados,primary,4,60
+24,BRB,Barbados,secondary,5,60
+24,BRB,Barbados,tertiary,6,60
+24,BRB,Barbados,primary link,8,60
+24,BRB,Barbados,unclassified,9,40
+24,BRB,Barbados,residential,11,40
+24,BRB,Barbados,service,12,20
+24,BRB,Barbados,track,13,40
+24,BRB,Barbados,other,15,80
+26,BLR,Belarus,motorway,1,120
+26,BLR,Belarus,trunk,2,90
+26,BLR,Belarus,primary,4,60
+26,BLR,Belarus,secondary,5,60
+26,BLR,Belarus,tertiary,6,60
+26,BLR,Belarus,motorway link,7,90
+26,BLR,Belarus,primary link,8,60
+26,BLR,Belarus,unclassified,9,60
+26,BLR,Belarus,road,10,12.5
+26,BLR,Belarus,residential,11,60
+26,BLR,Belarus,service,12,20
+26,BLR,Belarus,track,13,40
+26,BLR,Belarus,pedestrian,14,20
+26,BLR,Belarus,other,15,60
+27,BEL,Belgium,motorway,1,120
+27,BEL,Belgium,trunk,2,90
+27,BEL,Belgium,primary,4,70
+27,BEL,Belgium,secondary,5,50
+27,BEL,Belgium,tertiary,6,50
+27,BEL,Belgium,motorway link,7,90
+27,BEL,Belgium,primary link,8,50
+27,BEL,Belgium,unclassified,9,50
+27,BEL,Belgium,road,10,50
+27,BEL,Belgium,residential,11,50
+27,BEL,Belgium,service,12,30
+27,BEL,Belgium,track,13,50
+27,BEL,Belgium,pedestrian,14,30
+27,BEL,Belgium,other,15,30
+28,BLZ,Belize,primary,4,64.3736
+28,BLZ,Belize,secondary,5,50
+28,BLZ,Belize,tertiary,6,48.2802
+28,BLZ,Belize,unclassified,9,48.2802
+28,BLZ,Belize,residential,11,44.25685
+28,BLZ,Belize,service,12,20
+28,BLZ,Belize,track,13,48.2802
+28,BLZ,Belize,other,15,40.2335
+29,BEN,Benin,trunk,2,50
+29,BEN,Benin,primary,4,50
+29,BEN,Benin,secondary,5,50
+29,BEN,Benin,tertiary,6,50
+29,BEN,Benin,unclassified,9,30
+29,BEN,Benin,residential,11,30
+29,BEN,Benin,track,13,30
+29,BEN,Benin,other,15,30
+30,BMU,Bermuda,primary,4,35
+30,BMU,Bermuda,secondary,5,30
+30,BMU,Bermuda,tertiary,6,30
+30,BMU,Bermuda,unclassified,9,15
+30,BMU,Bermuda,residential,11,10
+30,BMU,Bermuda,service,12,10
+31,BTN,Bhutan,trunk,2,50
+31,BTN,Bhutan,primary,4,20
+31,BTN,Bhutan,secondary,5,40
+31,BTN,Bhutan,unclassified,9,25
+31,BTN,Bhutan,residential,11,20
+31,BTN,Bhutan,service,12,20
+31,BTN,Bhutan,track,13,15
+31,BTN,Bhutan,other,15,50
+33,BOL,Bolivia,trunk,2,80
+33,BOL,Bolivia,primary,4,60
+33,BOL,Bolivia,secondary,5,60
+33,BOL,Bolivia,tertiary,6,40
+33,BOL,Bolivia,primary link,8,40
+33,BOL,Bolivia,unclassified,9,30
+33,BOL,Bolivia,residential,11,15
+33,BOL,Bolivia,service,12,17.5
+33,BOL,Bolivia,track,13,30
+33,BOL,Bolivia,pedestrian,14,10
+33,BOL,Bolivia,other,15,40
+34,BIH,Bosnia and Herzegovina,motorway,1,120
+34,BIH,Bosnia and Herzegovina,trunk,2,80
+34,BIH,Bosnia and Herzegovina,primary,4,60
+34,BIH,Bosnia and Herzegovina,secondary,5,50
+34,BIH,Bosnia and Herzegovina,tertiary,6,40
+34,BIH,Bosnia and Herzegovina,motorway link,7,40
+34,BIH,Bosnia and Herzegovina,primary link,8,40
+34,BIH,Bosnia and Herzegovina,unclassified,9,40
+34,BIH,Bosnia and Herzegovina,road,10,35
+34,BIH,Bosnia and Herzegovina,residential,11,40
+34,BIH,Bosnia and Herzegovina,service,12,30
+34,BIH,Bosnia and Herzegovina,track,13,30
+34,BIH,Bosnia and Herzegovina,other,15,40
+35,BWA,Botswana,trunk,2,80
+35,BWA,Botswana,primary,4,60
+35,BWA,Botswana,secondary,5,60
+35,BWA,Botswana,tertiary,6,50
+35,BWA,Botswana,primary link,8,30
+35,BWA,Botswana,unclassified,9,50
+35,BWA,Botswana,residential,11,40
+35,BWA,Botswana,service,12,20
+35,BWA,Botswana,track,13,40
+35,BWA,Botswana,other,15,30
+37,BRA,Brazil,motorway,1,100
+37,BRA,Brazil,trunk,2,70
+37,BRA,Brazil,primary,4,60
+37,BRA,Brazil,secondary,5,50
+37,BRA,Brazil,tertiary,6,40
+37,BRA,Brazil,motorway link,7,40
+37,BRA,Brazil,primary link,8,40
+37,BRA,Brazil,unclassified,9,40
+37,BRA,Brazil,road,10,30
+37,BRA,Brazil,residential,11,40
+37,BRA,Brazil,service,12,20
+37,BRA,Brazil,track,13,60
+37,BRA,Brazil,pedestrian,14,20
+37,BRA,Brazil,other,15,40
+39,VGB,British Virgin Islands,primary,4,32.1868
+39,VGB,British Virgin Islands,tertiary,6,32.1868
+39,VGB,British Virgin Islands,residential,11,5
+40,BRN,Brunei Darussalam,motorway,1,80
+40,BRN,Brunei Darussalam,trunk,2,80
+40,BRN,Brunei Darussalam,primary,4,65
+40,BRN,Brunei Darussalam,secondary,5,65
+40,BRN,Brunei Darussalam,tertiary,6,60
+40,BRN,Brunei Darussalam,motorway link,7,50
+40,BRN,Brunei Darussalam,primary link,8,50
+40,BRN,Brunei Darussalam,unclassified,9,50
+40,BRN,Brunei Darussalam,residential,11,50
+40,BRN,Brunei Darussalam,service,12,20
+40,BRN,Brunei Darussalam,other,15,57.5
+41,BGR,Bulgaria,motorway,1,140
+41,BGR,Bulgaria,trunk,2,70
+41,BGR,Bulgaria,primary,4,50
+41,BGR,Bulgaria,secondary,5,50
+41,BGR,Bulgaria,tertiary,6,50
+41,BGR,Bulgaria,motorway link,7,50
+41,BGR,Bulgaria,primary link,8,50
+41,BGR,Bulgaria,unclassified,9,50
+41,BGR,Bulgaria,road,10,20
+41,BGR,Bulgaria,residential,11,50
+41,BGR,Bulgaria,service,12,50
+41,BGR,Bulgaria,track,13,50
+41,BGR,Bulgaria,pedestrian,14,50
+41,BGR,Bulgaria,other,15,50
+42,BFA,Burkina Faso,trunk,2,90
+42,BFA,Burkina Faso,primary,4,80
+42,BFA,Burkina Faso,secondary,5,50
+42,BFA,Burkina Faso,tertiary,6,50
+42,BFA,Burkina Faso,primary link,8,30
+42,BFA,Burkina Faso,unclassified,9,50
+42,BFA,Burkina Faso,residential,11,30
+42,BFA,Burkina Faso,service,12,30
+42,BFA,Burkina Faso,track,13,30
+42,BFA,Burkina Faso,other,15,30
+43,BDI,Burundi,primary,4,90
+43,BDI,Burundi,tertiary,6,30
+43,BDI,Burundi,residential,11,20
+43,BDI,Burundi,other,15,20
+44,KHM,Cambodia,trunk,2,40
+44,KHM,Cambodia,primary,4,40
+44,KHM,Cambodia,secondary,5,45
+44,KHM,Cambodia,tertiary,6,50
+44,KHM,Cambodia,unclassified,9,40
+44,KHM,Cambodia,residential,11,30
+44,KHM,Cambodia,service,12,20
+44,KHM,Cambodia,track,13,30
+44,KHM,Cambodia,other,15,20
+45,CMR,Cameroon,trunk,2,55
+45,CMR,Cameroon,primary,4,40
+45,CMR,Cameroon,secondary,5,80
+45,CMR,Cameroon,tertiary,6,50
+45,CMR,Cameroon,unclassified,9,40
+45,CMR,Cameroon,residential,11,30
+45,CMR,Cameroon,other,15,30
+46,CAN,Canada,motorway,1,100
+46,CAN,Canada,trunk,2,80
+46,CAN,Canada,primary,4,70
+46,CAN,Canada,secondary,5,60
+46,CAN,Canada,tertiary,6,50
+46,CAN,Canada,motorway link,7,70
+46,CAN,Canada,primary link,8,50
+46,CAN,Canada,unclassified,9,80
+46,CAN,Canada,road,10,30
+46,CAN,Canada,residential,11,50
+46,CAN,Canada,service,12,30
+46,CAN,Canada,track,13,80
+46,CAN,Canada,pedestrian,14,30
+46,CAN,Canada,other,15,20
+47,CPV,Cape Verde,primary,4,90
+47,CPV,Cape Verde,secondary,5,40
+47,CPV,Cape Verde,tertiary,6,60
+47,CPV,Cape Verde,primary link,8,50
+47,CPV,Cape Verde,unclassified,9,30
+47,CPV,Cape Verde,residential,11,30
+47,CPV,Cape Verde,service,12,20
+48,CYM,Cayman Islands,primary,4,64.3736
+48,CYM,Cayman Islands,secondary,5,40.2335
+48,CYM,Cayman Islands,tertiary,6,40.2335
+48,CYM,Cayman Islands,primary link,8,40.2335
+48,CYM,Cayman Islands,unclassified,9,40.2335
+48,CYM,Cayman Islands,residential,11,40.2335
+48,CYM,Cayman Islands,service,12,40
+48,CYM,Cayman Islands,track,13,20
+48,CYM,Cayman Islands,other,15,40.2335
+49,CAF,Central African Republic,unclassified,9,90
+49,CAF,Central African Republic,residential,11,5
+49,CAF,Central African Republic,service,12,20
+49,CAF,Central African Republic,other,15,20
+50,TCD,Chad,trunk,2,70
+50,TCD,Chad,primary,4,55
+50,TCD,Chad,secondary,5,50
+50,TCD,Chad,tertiary,6,50
+50,TCD,Chad,unclassified,9,50
+50,TCD,Chad,residential,11,30
+50,TCD,Chad,service,12,20
+50,TCD,Chad,track,13,20
+50,TCD,Chad,other,15,20
+51,CHL,Chile,motorway,1,120
+51,CHL,Chile,trunk,2,80
+51,CHL,Chile,primary,4,60
+51,CHL,Chile,secondary,5,50
+51,CHL,Chile,tertiary,6,50
+51,CHL,Chile,motorway link,7,50
+51,CHL,Chile,primary link,8,50
+51,CHL,Chile,unclassified,9,40
+51,CHL,Chile,road,10,40
+51,CHL,Chile,residential,11,40
+51,CHL,Chile,service,12,30
+51,CHL,Chile,track,13,40
+51,CHL,Chile,pedestrian,14,20
+51,CHL,Chile,other,15,40
+53,CHN,China,motorway,1,120
+53,CHN,China,trunk,2,80
+53,CHN,China,primary,4,60
+53,CHN,China,secondary,5,50
+53,CHN,China,tertiary,6,40
+53,CHN,China,motorway link,7,50
+53,CHN,China,primary link,8,40
+53,CHN,China,unclassified,9,30
+53,CHN,China,road,10,30
+53,CHN,China,residential,11,20
+53,CHN,China,service,12,20
+53,CHN,China,track,13,20
+53,CHN,China,pedestrian,14,20
+53,CHN,China,other,15,30
+54,CXR,Christmas Island,service,12,25
+57,COL,Colombia,trunk,2,60
+57,COL,Colombia,primary,4,47.5
+57,COL,Colombia,secondary,5,30
+57,COL,Colombia,tertiary,6,30
+57,COL,Colombia,primary link,8,30
+57,COL,Colombia,unclassified,9,30
+57,COL,Colombia,road,10,20
+57,COL,Colombia,residential,11,30
+57,COL,Colombia,service,12,20
+57,COL,Colombia,track,13,30
+57,COL,Colombia,pedestrian,14,30
+57,COL,Colombia,other,15,30
+58,COM,Comoros,primary,4,40
+58,COM,Comoros,secondary,5,20
+58,COM,Comoros,tertiary,6,30
+58,COM,Comoros,unclassified,9,6
+58,COM,Comoros,residential,11,20
+60,COK,Cook Islands,primary,4,50
+60,COK,Cook Islands,secondary,5,40
+60,COK,Cook Islands,tertiary,6,30
+60,COK,Cook Islands,unclassified,9,40
+60,COK,Cook Islands,residential,11,20
+60,COK,Cook Islands,service,12,20
+60,COK,Cook Islands,track,13,40
+60,COK,Cook Islands,other,15,20
+61,CRI,Costa Rica,trunk,2,80
+61,CRI,Costa Rica,primary,4,60
+61,CRI,Costa Rica,secondary,5,40
+61,CRI,Costa Rica,tertiary,6,40
+61,CRI,Costa Rica,primary link,8,40
+61,CRI,Costa Rica,unclassified,9,20
+61,CRI,Costa Rica,road,10,10
+61,CRI,Costa Rica,residential,11,40
+61,CRI,Costa Rica,service,12,20
+61,CRI,Costa Rica,track,13,40
+61,CRI,Costa Rica,pedestrian,14,40
+61,CRI,Costa Rica,other,15,40
+62,HRV,Croatia,motorway,1,130
+62,HRV,Croatia,trunk,2,80
+62,HRV,Croatia,primary,4,50
+62,HRV,Croatia,secondary,5,50
+62,HRV,Croatia,tertiary,6,50
+62,HRV,Croatia,motorway link,7,50
+62,HRV,Croatia,primary link,8,40
+62,HRV,Croatia,unclassified,9,30
+62,HRV,Croatia,road,10,25
+62,HRV,Croatia,residential,11,40
+62,HRV,Croatia,service,12,30
+62,HRV,Croatia,track,13,20
+62,HRV,Croatia,pedestrian,14,50
+62,HRV,Croatia,other,15,40
+63,CUB,Cuba,motorway,1,100
+63,CUB,Cuba,trunk,2,80
+63,CUB,Cuba,primary,4,60
+63,CUB,Cuba,secondary,5,50
+63,CUB,Cuba,tertiary,6,50
+63,CUB,Cuba,motorway link,7,60
+63,CUB,Cuba,primary link,8,50
+63,CUB,Cuba,unclassified,9,50
+63,CUB,Cuba,residential,11,50
+63,CUB,Cuba,service,12,30
+63,CUB,Cuba,track,13,30
+63,CUB,Cuba,pedestrian,14,40
+63,CUB,Cuba,other,15,40
+64,CYP,Cyprus,motorway,1,100
+64,CYP,Cyprus,trunk,2,50
+64,CYP,Cyprus,primary,4,50
+64,CYP,Cyprus,secondary,5,50
+64,CYP,Cyprus,tertiary,6,50
+64,CYP,Cyprus,motorway link,7,50
+64,CYP,Cyprus,primary link,8,50
+64,CYP,Cyprus,unclassified,9,50
+64,CYP,Cyprus,road,10,50
+64,CYP,Cyprus,residential,11,50
+64,CYP,Cyprus,service,12,50
+64,CYP,Cyprus,track,13,40.2335
+64,CYP,Cyprus,pedestrian,14,7.5
+64,CYP,Cyprus,other,15,50
+65,CZE,Czech Republic,motorway,1,130
+65,CZE,Czech Republic,trunk,2,80
+65,CZE,Czech Republic,primary,4,50
+65,CZE,Czech Republic,secondary,5,50
+65,CZE,Czech Republic,tertiary,6,50
+65,CZE,Czech Republic,motorway link,7,90
+65,CZE,Czech Republic,primary link,8,50
+65,CZE,Czech Republic,unclassified,9,50
+65,CZE,Czech Republic,road,10,40
+65,CZE,Czech Republic,residential,11,50
+65,CZE,Czech Republic,service,12,30
+65,CZE,Czech Republic,track,13,50
+65,CZE,Czech Republic,pedestrian,14,20
+65,CZE,Czech Republic,other,15,40
+66,CIV,Côte d'Ivoire,motorway,1,110
+66,CIV,Côte d'Ivoire,trunk,2,60
+66,CIV,Côte d'Ivoire,primary,4,60
+66,CIV,Côte d'Ivoire,secondary,5,60
+66,CIV,Côte d'Ivoire,tertiary,6,50
+66,CIV,Côte d'Ivoire,motorway link,7,60
+66,CIV,Côte d'Ivoire,primary link,8,60
+66,CIV,Côte d'Ivoire,unclassified,9,40
+66,CIV,Côte d'Ivoire,residential,11,50
+66,CIV,Côte d'Ivoire,service,12,30
+66,CIV,Côte d'Ivoire,track,13,40
+66,CIV,Côte d'Ivoire,other,15,55
+67,PRK,North Korea,motorway,1,80
+67,PRK,North Korea,trunk,2,80
+67,PRK,North Korea,primary,4,60
+67,PRK,North Korea,secondary,5,60
+67,PRK,North Korea,tertiary,6,15
+67,PRK,North Korea,service,12,5
+68,COD,Democratic Republic of the Congo,trunk,2,90
+68,COD,Democratic Republic of the Congo,primary,4,75
+68,COD,Democratic Republic of the Congo,secondary,5,30
+68,COD,Democratic Republic of the Congo,tertiary,6,50
+68,COD,Democratic Republic of the Congo,unclassified,9,50
+68,COD,Democratic Republic of the Congo,residential,11,20
+68,COD,Democratic Republic of the Congo,service,12,30
+68,COD,Democratic Republic of the Congo,track,13,30
+68,COD,Democratic Republic of the Congo,other,15,20
+69,DNK,Denmark,motorway,1,110
+69,DNK,Denmark,trunk,2,90
+69,DNK,Denmark,primary,4,70
+69,DNK,Denmark,secondary,5,70
+69,DNK,Denmark,tertiary,6,50
+69,DNK,Denmark,motorway link,7,90
+69,DNK,Denmark,primary link,8,70
+69,DNK,Denmark,unclassified,9,50
+69,DNK,Denmark,residential,11,50
+69,DNK,Denmark,service,12,30
+69,DNK,Denmark,track,13,20
+69,DNK,Denmark,pedestrian,14,40
+69,DNK,Denmark,other,15,60
+70,DJI,Djibouti,trunk,2,71.5
+70,DJI,Djibouti,primary,4,100
+70,DJI,Djibouti,secondary,5,50
+70,DJI,Djibouti,tertiary,6,50
+70,DJI,Djibouti,unclassified,9,50
+70,DJI,Djibouti,residential,11,50
+70,DJI,Djibouti,service,12,10
+71,DMA,Dominica,primary,4,30
+71,DMA,Dominica,secondary,5,30
+71,DMA,Dominica,tertiary,6,48.2802
+71,DMA,Dominica,service,12,20
+72,DOM,Dominican Republic,motorway,1,100
+72,DOM,Dominican Republic,trunk,2,100
+72,DOM,Dominican Republic,primary,4,80
+72,DOM,Dominican Republic,secondary,5,60
+72,DOM,Dominican Republic,tertiary,6,40
+72,DOM,Dominican Republic,motorway link,7,80
+72,DOM,Dominican Republic,primary link,8,40
+72,DOM,Dominican Republic,unclassified,9,35
+72,DOM,Dominican Republic,residential,11,20
+72,DOM,Dominican Republic,service,12,20
+72,DOM,Dominican Republic,track,13,20
+72,DOM,Dominican Republic,other,15,20
+73,ECU,Ecuador,motorway,1,90
+73,ECU,Ecuador,trunk,2,70
+73,ECU,Ecuador,primary,4,50
+73,ECU,Ecuador,secondary,5,50
+73,ECU,Ecuador,tertiary,6,50
+73,ECU,Ecuador,motorway link,7,50
+73,ECU,Ecuador,primary link,8,50
+73,ECU,Ecuador,unclassified,9,30
+73,ECU,Ecuador,road,10,30
+73,ECU,Ecuador,residential,11,35
+73,ECU,Ecuador,service,12,20
+73,ECU,Ecuador,track,13,30
+73,ECU,Ecuador,pedestrian,14,30
+73,ECU,Ecuador,other,15,30
+74,SSD,South Sudan,trunk,2,80.467
+74,SSD,South Sudan,tertiary,6,50
+74,SSD,South Sudan,unclassified,9,50
+74,SSD,South Sudan,residential,11,25
+74,SSD,South Sudan,service,12,30
+74,SSD,South Sudan,other,15,30
+75,SLV,El Salvador,trunk,2,65
+75,SLV,El Salvador,primary,4,60
+75,SLV,El Salvador,secondary,5,50
+75,SLV,El Salvador,tertiary,6,40
+75,SLV,El Salvador,primary link,8,40
+75,SLV,El Salvador,unclassified,9,40
+75,SLV,El Salvador,residential,11,40
+75,SLV,El Salvador,service,12,20
+75,SLV,El Salvador,track,13,25
+75,SLV,El Salvador,pedestrian,14,90
+75,SLV,El Salvador,other,15,40
+76,GNQ,Equatorial Guinea,trunk,2,70
+76,GNQ,Equatorial Guinea,primary,4,70
+76,GNQ,Equatorial Guinea,tertiary,6,20
+76,GNQ,Equatorial Guinea,residential,11,30
+77,ERI,Eritrea,residential,11,35
+78,EST,Estonia,trunk,2,90
+78,EST,Estonia,primary,4,50
+78,EST,Estonia,secondary,5,50
+78,EST,Estonia,tertiary,6,50
+78,EST,Estonia,primary link,8,50
+78,EST,Estonia,unclassified,9,50
+78,EST,Estonia,road,10,30
+78,EST,Estonia,residential,11,30
+78,EST,Estonia,service,12,20
+78,EST,Estonia,track,13,30
+78,EST,Estonia,other,15,50
+79,ETH,Ethiopia,motorway,1,80
+79,ETH,Ethiopia,trunk,2,80
+79,ETH,Ethiopia,primary,4,56
+79,ETH,Ethiopia,secondary,5,93
+79,ETH,Ethiopia,tertiary,6,56
+79,ETH,Ethiopia,motorway link,7,40
+79,ETH,Ethiopia,primary link,8,30
+79,ETH,Ethiopia,unclassified,9,53
+79,ETH,Ethiopia,residential,11,50
+79,ETH,Ethiopia,service,12,25
+79,ETH,Ethiopia,track,13,40
+79,ETH,Ethiopia,other,15,50
+81,FLK,Falkland Islands,service,12,40.2335
+82,FRO,Faroe Islands,primary,4,80
+82,FRO,Faroe Islands,secondary,5,50
+82,FRO,Faroe Islands,tertiary,6,50
+82,FRO,Faroe Islands,unclassified,9,50
+82,FRO,Faroe Islands,residential,11,50
+82,FRO,Faroe Islands,service,12,50
+82,FRO,Faroe Islands,track,13,50
+82,FRO,Faroe Islands,other,15,50
+83,FJI,Fiji,primary,4,50
+83,FJI,Fiji,secondary,5,50
+83,FJI,Fiji,tertiary,6,50
+83,FJI,Fiji,unclassified,9,30
+83,FJI,Fiji,residential,11,50
+83,FJI,Fiji,service,12,32.5
+83,FJI,Fiji,track,13,35
+83,FJI,Fiji,other,15,50
+84,FIN,Finland,motorway,1,100
+84,FIN,Finland,trunk,2,80
+84,FIN,Finland,primary,4,60
+84,FIN,Finland,secondary,5,50
+84,FIN,Finland,tertiary,6,50
+84,FIN,Finland,motorway link,7,80
+84,FIN,Finland,primary link,8,50
+84,FIN,Finland,unclassified,9,40
+84,FIN,Finland,road,10,30
+84,FIN,Finland,residential,11,40
+84,FIN,Finland,service,12,30
+84,FIN,Finland,track,13,40
+84,FIN,Finland,pedestrian,14,20
+84,FIN,Finland,other,15,50
+85,FRA,France,motorway,1,130
+85,FRA,France,trunk,2,90
+85,FRA,France,primary,4,50
+85,FRA,France,secondary,5,50
+85,FRA,France,tertiary,6,50
+85,FRA,France,motorway link,7,70
+85,FRA,France,primary link,8,50
+85,FRA,France,unclassified,9,50
+85,FRA,France,road,10,30
+85,FRA,France,residential,11,50
+85,FRA,France,service,12,30
+85,FRA,France,track,13,50
+85,FRA,France,pedestrian,14,30
+85,FRA,France,other,15,50
+86,GUF,French Guiana,primary,4,70
+86,GUF,French Guiana,secondary,5,50
+86,GUF,French Guiana,tertiary,6,50
+86,GUF,French Guiana,primary link,8,70
+86,GUF,French Guiana,unclassified,9,50
+86,GUF,French Guiana,residential,11,50
+86,GUF,French Guiana,service,12,30
+86,GUF,French Guiana,other,15,30
+87,PYF,French Polynesia,trunk,2,90
+87,PYF,French Polynesia,primary,4,60
+87,PYF,French Polynesia,secondary,5,90
+87,PYF,French Polynesia,tertiary,6,50
+87,PYF,French Polynesia,unclassified,9,50
+87,PYF,French Polynesia,residential,11,30
+87,PYF,French Polynesia,service,12,50
+87,PYF,French Polynesia,other,15,60
+89,GAB,Gabon,secondary,5,50
+89,GAB,Gabon,tertiary,6,110
+89,GAB,Gabon,unclassified,9,40
+89,GAB,Gabon,residential,11,50
+89,GAB,Gabon,service,12,40
+90,GMB,Gambia,trunk,2,90
+90,GMB,Gambia,primary,4,40
+90,GMB,Gambia,unclassified,9,30
+90,GMB,Gambia,residential,11,30
+90,GMB,Gambia,service,12,20
+90,GMB,Gambia,track,13,20
+90,GMB,Gambia,other,15,20
+92,GEO,Georgia,motorway,1,110
+92,GEO,Georgia,trunk,2,90
+92,GEO,Georgia,primary,4,50
+92,GEO,Georgia,secondary,5,50
+92,GEO,Georgia,tertiary,6,50
+92,GEO,Georgia,motorway link,7,70
+92,GEO,Georgia,primary link,8,45
+92,GEO,Georgia,unclassified,9,50
+92,GEO,Georgia,road,10,60
+92,GEO,Georgia,residential,11,50
+92,GEO,Georgia,service,12,30
+92,GEO,Georgia,track,13,15
+92,GEO,Georgia,pedestrian,14,27.5
+92,GEO,Georgia,other,15,60
+93,DEU,Germany,motorway,1,100
+93,DEU,Germany,trunk,2,100
+93,DEU,Germany,primary,4,50
+93,DEU,Germany,secondary,5,50
+93,DEU,Germany,tertiary,6,50
+93,DEU,Germany,motorway link,7,80
+93,DEU,Germany,primary link,8,50
+93,DEU,Germany,unclassified,9,50
+93,DEU,Germany,road,10,30
+93,DEU,Germany,residential,11,30
+93,DEU,Germany,service,12,30
+93,DEU,Germany,track,13,30
+93,DEU,Germany,pedestrian,14,20
+93,DEU,Germany,other,15,50
+94,GHA,Ghana,trunk,2,50
+94,GHA,Ghana,primary,4,80
+94,GHA,Ghana,secondary,5,50
+94,GHA,Ghana,tertiary,6,50
+94,GHA,Ghana,unclassified,9,30
+94,GHA,Ghana,residential,11,30
+94,GHA,Ghana,service,12,20
+94,GHA,Ghana,other,15,20
+95,GIB,Gibraltar,primary,4,80.467
+95,GIB,Gibraltar,secondary,5,30
+95,GIB,Gibraltar,tertiary,6,30
+95,GIB,Gibraltar,residential,11,40
+97,GRC,Greece,motorway,1,120
+97,GRC,Greece,trunk,2,80
+97,GRC,Greece,primary,4,50
+97,GRC,Greece,secondary,5,50
+97,GRC,Greece,tertiary,6,50
+97,GRC,Greece,motorway link,7,50
+97,GRC,Greece,primary link,8,50
+97,GRC,Greece,unclassified,9,50
+97,GRC,Greece,road,10,50
+97,GRC,Greece,residential,11,50
+97,GRC,Greece,service,12,30
+97,GRC,Greece,track,13,30
+97,GRC,Greece,pedestrian,14,50
+97,GRC,Greece,other,15,50
+98,GRL,Greenland,primary,4,25
+98,GRL,Greenland,secondary,5,50
+98,GRL,Greenland,tertiary,6,40
+98,GRL,Greenland,unclassified,9,65
+98,GRL,Greenland,residential,11,50
+98,GRL,Greenland,service,12,45
+98,GRL,Greenland,other,15,15
+99,GRD,Grenada,primary,4,20
+99,GRD,Grenada,tertiary,6,40
+99,GRD,Grenada,residential,11,48.2802
+100,GLP,Guadeloupe,trunk,2,90
+100,GLP,Guadeloupe,primary,4,70
+100,GLP,Guadeloupe,secondary,5,50
+100,GLP,Guadeloupe,tertiary,6,30
+100,GLP,Guadeloupe,primary link,8,50
+100,GLP,Guadeloupe,unclassified,9,50
+100,GLP,Guadeloupe,residential,11,30
+100,GLP,Guadeloupe,service,12,30
+100,GLP,Guadeloupe,track,13,30
+100,GLP,Guadeloupe,other,15,50
+103,GTM,Guatemala,motorway,1,80
+103,GTM,Guatemala,trunk,2,70
+103,GTM,Guatemala,primary,4,60
+103,GTM,Guatemala,secondary,5,50
+103,GTM,Guatemala,tertiary,6,40
+103,GTM,Guatemala,motorway link,7,40
+103,GTM,Guatemala,primary link,8,40
+103,GTM,Guatemala,unclassified,9,40
+103,GTM,Guatemala,residential,11,40
+103,GTM,Guatemala,service,12,40
+103,GTM,Guatemala,track,13,40
+103,GTM,Guatemala,pedestrian,14,8.0467
+103,GTM,Guatemala,other,15,40
+104,GGY,Guernsey,primary,4,56.3269
+104,GGY,Guernsey,secondary,5,40.2335
+104,GGY,Guernsey,tertiary,6,56.3269
+104,GGY,Guernsey,unclassified,9,56.3269
+104,GGY,Guernsey,residential,11,48.2802
+104,GGY,Guernsey,service,12,40.2335
+104,GGY,Guernsey,track,13,56.3269
+104,GGY,Guernsey,pedestrian,14,25
+104,GGY,Guernsey,other,15,24.1401
+105,GNB,Guinea-Bissau,primary,4,70
+105,GNB,Guinea-Bissau,tertiary,6,50
+105,GNB,Guinea-Bissau,residential,11,50
+106,GIN,Guinea,trunk,2,90
+106,GIN,Guinea,primary,4,90
+106,GIN,Guinea,secondary,5,50
+106,GIN,Guinea,tertiary,6,50
+106,GIN,Guinea,unclassified,9,30
+106,GIN,Guinea,residential,11,30
+106,GIN,Guinea,track,13,5
+107,GUY,Guyana,primary,4,50
+107,GUY,Guyana,secondary,5,60
+107,GUY,Guyana,tertiary,6,60
+107,GUY,Guyana,unclassified,9,60
+107,GUY,Guyana,residential,11,30
+107,GUY,Guyana,service,12,20
+107,GUY,Guyana,track,13,30
+107,GUY,Guyana,other,15,15
+108,HTI,Haiti,primary,4,50
+108,HTI,Haiti,secondary,5,30
+108,HTI,Haiti,tertiary,6,35
+108,HTI,Haiti,unclassified,9,40
+108,HTI,Haiti,road,10,20
+108,HTI,Haiti,residential,11,30
+108,HTI,Haiti,service,12,20
+108,HTI,Haiti,track,13,20
+110,VAT,Vatican City,primary,4,50
+110,VAT,Vatican City,secondary,5,50
+110,VAT,Vatican City,tertiary,6,50
+110,VAT,Vatican City,primary link,8,50
+110,VAT,Vatican City,unclassified,9,50
+110,VAT,Vatican City,residential,11,50
+110,VAT,Vatican City,service,12,50
+110,VAT,Vatican City,other,15,50
+111,HND,Honduras,trunk,2,80
+111,HND,Honduras,primary,4,60
+111,HND,Honduras,secondary,5,40
+111,HND,Honduras,tertiary,6,40
+111,HND,Honduras,primary link,8,30
+111,HND,Honduras,unclassified,9,30
+111,HND,Honduras,residential,11,30
+111,HND,Honduras,service,12,20
+111,HND,Honduras,track,13,25
+111,HND,Honduras,other,15,50
+113,HUN,Hungary,motorway,1,130
+113,HUN,Hungary,trunk,2,110
+113,HUN,Hungary,primary,4,50
+113,HUN,Hungary,secondary,5,50
+113,HUN,Hungary,tertiary,6,50
+113,HUN,Hungary,motorway link,7,60
+113,HUN,Hungary,primary link,8,50
+113,HUN,Hungary,unclassified,9,40
+113,HUN,Hungary,road,10,50
+113,HUN,Hungary,residential,11,30
+113,HUN,Hungary,service,12,30
+113,HUN,Hungary,track,13,30
+113,HUN,Hungary,pedestrian,14,30
+113,HUN,Hungary,other,15,30
+114,ISL,Iceland,motorway,1,90
+114,ISL,Iceland,trunk,2,90
+114,ISL,Iceland,primary,4,80
+114,ISL,Iceland,secondary,5,50
+114,ISL,Iceland,tertiary,6,50
+114,ISL,Iceland,motorway link,7,50
+114,ISL,Iceland,primary link,8,50
+114,ISL,Iceland,unclassified,9,30
+114,ISL,Iceland,road,10,90
+114,ISL,Iceland,residential,11,30
+114,ISL,Iceland,service,12,30
+114,ISL,Iceland,track,13,55
+114,ISL,Iceland,pedestrian,14,15
+114,ISL,Iceland,other,15,50
+115,IND,India,motorway,1,100
+115,IND,India,trunk,2,70
+115,IND,India,primary,4,60
+115,IND,India,secondary,5,40
+115,IND,India,tertiary,6,40
+115,IND,India,motorway link,7,50
+115,IND,India,primary link,8,40
+115,IND,India,unclassified,9,30
+115,IND,India,road,10,20
+115,IND,India,residential,11,30
+115,IND,India,service,12,30
+115,IND,India,track,13,32.1868
+115,IND,India,pedestrian,14,20
+115,IND,India,other,15,30
+117,IRN,Iran,motorway,1,120
+117,IRN,Iran,trunk,2,80
+117,IRN,Iran,primary,4,60
+117,IRN,Iran,secondary,5,50
+117,IRN,Iran,tertiary,6,40
+117,IRN,Iran,motorway link,7,50
+117,IRN,Iran,primary link,8,30
+117,IRN,Iran,unclassified,9,30
+117,IRN,Iran,road,10,30
+117,IRN,Iran,residential,11,30
+117,IRN,Iran,service,12,30
+117,IRN,Iran,track,13,30
+117,IRN,Iran,pedestrian,14,30
+117,IRN,Iran,other,15,30
+118,IRQ,Iraq,motorway,1,100
+118,IRQ,Iraq,trunk,2,80
+118,IRQ,Iraq,primary,4,60
+118,IRQ,Iraq,secondary,5,60
+118,IRQ,Iraq,tertiary,6,50
+118,IRQ,Iraq,motorway link,7,50
+118,IRQ,Iraq,primary link,8,40
+118,IRQ,Iraq,unclassified,9,40
+118,IRQ,Iraq,residential,11,40
+118,IRQ,Iraq,service,12,40
+118,IRQ,Iraq,track,13,25
+118,IRQ,Iraq,pedestrian,14,20
+118,IRQ,Iraq,other,15,40
+119,IRL,Ireland,motorway,1,120
+119,IRL,Ireland,trunk,2,96.5604
+119,IRL,Ireland,primary,4,80
+119,IRL,Ireland,secondary,5,60
+119,IRL,Ireland,tertiary,6,80
+119,IRL,Ireland,motorway link,7,80
+119,IRL,Ireland,primary link,8,50
+119,IRL,Ireland,unclassified,9,80
+119,IRL,Ireland,road,10,88.2802
+119,IRL,Ireland,residential,11,50
+119,IRL,Ireland,service,12,30
+119,IRL,Ireland,track,13,80
+119,IRL,Ireland,pedestrian,14,30
+119,IRL,Ireland,other,15,50
+120,IMN,Isle of Man,trunk,2,48.2802
+120,IMN,Isle of Man,primary,4,48.2802
+120,IMN,Isle of Man,secondary,5,48.2802
+120,IMN,Isle of Man,tertiary,6,48.2802
+120,IMN,Isle of Man,primary link,8,48.2802
+120,IMN,Isle of Man,unclassified,9,48.2802
+120,IMN,Isle of Man,road,10,32.1868
+120,IMN,Isle of Man,residential,11,32.1868
+120,IMN,Isle of Man,service,12,32.1868
+120,IMN,Isle of Man,track,13,48.2802
+120,IMN,Isle of Man,pedestrian,14,48.2802
+121,ISR,Israel,motorway,1,110
+121,ISR,Israel,trunk,2,90
+121,ISR,Israel,primary,4,70
+121,ISR,Israel,secondary,5,60
+121,ISR,Israel,tertiary,6,50
+121,ISR,Israel,motorway link,7,70
+121,ISR,Israel,primary link,8,60
+121,ISR,Israel,unclassified,9,40
+121,ISR,Israel,residential,11,30
+121,ISR,Israel,service,12,40
+121,ISR,Israel,track,13,40
+121,ISR,Israel,pedestrian,14,30
+121,ISR,Israel,other,15,30
+122,ITA,Italy,motorway,1,130
+122,ITA,Italy,trunk,2,90
+122,ITA,Italy,primary,4,50
+122,ITA,Italy,secondary,5,50
+122,ITA,Italy,tertiary,6,50
+122,ITA,Italy,motorway link,7,40
+122,ITA,Italy,primary link,8,40
+122,ITA,Italy,unclassified,9,50
+122,ITA,Italy,road,10,30
+122,ITA,Italy,residential,11,50
+122,ITA,Italy,service,12,30
+122,ITA,Italy,track,13,30
+122,ITA,Italy,pedestrian,14,30
+122,ITA,Italy,other,15,40
+123,JAM,Jamaica,motorway,1,80
+123,JAM,Jamaica,trunk,2,50
+123,JAM,Jamaica,primary,4,50
+123,JAM,Jamaica,secondary,5,50
+123,JAM,Jamaica,tertiary,6,50
+123,JAM,Jamaica,motorway link,7,50
+123,JAM,Jamaica,primary link,8,50
+123,JAM,Jamaica,unclassified,9,50
+123,JAM,Jamaica,residential,11,50
+123,JAM,Jamaica,service,12,50
+123,JAM,Jamaica,track,13,20
+123,JAM,Jamaica,other,15,50
+126,JPN,Japan,motorway,1,80
+126,JPN,Japan,trunk,2,50
+126,JPN,Japan,primary,4,40
+126,JPN,Japan,secondary,5,40
+126,JPN,Japan,tertiary,6,40
+126,JPN,Japan,motorway link,7,40
+126,JPN,Japan,primary link,8,40
+126,JPN,Japan,unclassified,9,30
+126,JPN,Japan,road,10,20
+126,JPN,Japan,residential,11,30
+126,JPN,Japan,service,12,20
+126,JPN,Japan,track,13,20
+126,JPN,Japan,pedestrian,14,30
+126,JPN,Japan,other,15,30
+128,JEY,Jersey,primary,4,48.2802
+128,JEY,Jersey,secondary,5,32.1868
+128,JEY,Jersey,tertiary,6,32.1868
+128,JEY,Jersey,primary link,8,48.2802
+128,JEY,Jersey,unclassified,9,28.16345
+128,JEY,Jersey,residential,11,32.1868
+128,JEY,Jersey,service,12,16.0934
+130,JOR,Jordan,motorway,1,80
+130,JOR,Jordan,trunk,2,80
+130,JOR,Jordan,primary,4,60
+130,JOR,Jordan,secondary,5,60
+130,JOR,Jordan,tertiary,6,50
+130,JOR,Jordan,motorway link,7,50
+130,JOR,Jordan,primary link,8,60
+130,JOR,Jordan,unclassified,9,45
+130,JOR,Jordan,residential,11,40
+130,JOR,Jordan,service,12,30
+130,JOR,Jordan,other,15,40
+132,KAZ,Kazakhstan,motorway,1,140
+132,KAZ,Kazakhstan,trunk,2,60
+132,KAZ,Kazakhstan,primary,4,60
+132,KAZ,Kazakhstan,secondary,5,60
+132,KAZ,Kazakhstan,tertiary,6,60
+132,KAZ,Kazakhstan,primary link,8,60
+132,KAZ,Kazakhstan,unclassified,9,40
+132,KAZ,Kazakhstan,residential,11,50
+132,KAZ,Kazakhstan,service,12,20
+132,KAZ,Kazakhstan,track,13,40
+132,KAZ,Kazakhstan,pedestrian,14,60
+132,KAZ,Kazakhstan,other,15,50
+133,KEN,Kenya,trunk,2,80
+133,KEN,Kenya,primary,4,80
+133,KEN,Kenya,secondary,5,50
+133,KEN,Kenya,tertiary,6,50
+133,KEN,Kenya,unclassified,9,40
+133,KEN,Kenya,residential,11,40
+133,KEN,Kenya,service,12,30
+133,KEN,Kenya,track,13,30
+133,KEN,Kenya,other,15,50
+137,KWT,Kuwait,motorway,1,120
+137,KWT,Kuwait,trunk,2,120
+137,KWT,Kuwait,primary,4,80
+137,KWT,Kuwait,secondary,5,60
+137,KWT,Kuwait,tertiary,6,45
+137,KWT,Kuwait,motorway link,7,80
+137,KWT,Kuwait,primary link,8,80
+137,KWT,Kuwait,unclassified,9,45
+137,KWT,Kuwait,residential,11,45
+137,KWT,Kuwait,service,12,40
+137,KWT,Kuwait,track,13,80
+137,KWT,Kuwait,pedestrian,14,80
+137,KWT,Kuwait,other,15,60
+138,KGZ,Kyrgyzstan,trunk,2,60
+138,KGZ,Kyrgyzstan,primary,4,60
+138,KGZ,Kyrgyzstan,secondary,5,60
+138,KGZ,Kyrgyzstan,tertiary,6,60
+138,KGZ,Kyrgyzstan,primary link,8,40
+138,KGZ,Kyrgyzstan,unclassified,9,20
+138,KGZ,Kyrgyzstan,road,10,20
+138,KGZ,Kyrgyzstan,residential,11,40
+138,KGZ,Kyrgyzstan,service,12,20
+138,KGZ,Kyrgyzstan,track,13,15
+138,KGZ,Kyrgyzstan,pedestrian,14,60
+138,KGZ,Kyrgyzstan,other,15,40
+139,LAO,Laos,trunk,2,50
+139,LAO,Laos,primary,4,40
+139,LAO,Laos,secondary,5,20
+139,LAO,Laos,tertiary,6,50
+139,LAO,Laos,unclassified,9,30
+139,LAO,Laos,residential,11,30
+139,LAO,Laos,service,12,10
+139,LAO,Laos,track,13,50
+139,LAO,Laos,other,15,30
+140,LVA,Latvia,trunk,2,90
+140,LVA,Latvia,primary,4,50
+140,LVA,Latvia,secondary,5,50
+140,LVA,Latvia,tertiary,6,50
+140,LVA,Latvia,primary link,8,50
+140,LVA,Latvia,unclassified,9,50
+140,LVA,Latvia,road,10,50
+140,LVA,Latvia,residential,11,50
+140,LVA,Latvia,service,12,20
+140,LVA,Latvia,track,13,20
+140,LVA,Latvia,other,15,50
+141,LBN,Lebanon,motorway,1,100
+141,LBN,Lebanon,trunk,2,80
+141,LBN,Lebanon,primary,4,50
+141,LBN,Lebanon,secondary,5,60
+141,LBN,Lebanon,tertiary,6,40
+141,LBN,Lebanon,motorway link,7,60
+141,LBN,Lebanon,primary link,8,40
+141,LBN,Lebanon,unclassified,9,40
+141,LBN,Lebanon,residential,11,40
+141,LBN,Lebanon,service,12,20
+141,LBN,Lebanon,track,13,10
+141,LBN,Lebanon,other,15,20
+142,LSO,Lesotho,trunk,2,55
+142,LSO,Lesotho,primary,4,50
+142,LSO,Lesotho,secondary,5,50
+142,LSO,Lesotho,tertiary,6,50
+142,LSO,Lesotho,unclassified,9,40
+142,LSO,Lesotho,residential,11,50
+142,LSO,Lesotho,service,12,50
+142,LSO,Lesotho,track,13,60
+144,LBR,Liberia,trunk,2,50
+144,LBR,Liberia,primary,4,60
+144,LBR,Liberia,tertiary,6,64.3736
+144,LBR,Liberia,unclassified,9,15
+144,LBR,Liberia,residential,11,15
+145,LBY,Libya,motorway,1,100
+145,LBY,Libya,trunk,2,100
+145,LBY,Libya,primary,4,80
+145,LBY,Libya,secondary,5,80
+145,LBY,Libya,tertiary,6,40
+145,LBY,Libya,unclassified,9,40
+145,LBY,Libya,residential,11,35
+145,LBY,Libya,service,12,40
+145,LBY,Libya,other,15,120
+146,LIE,Liechtenstein,primary,4,50
+146,LIE,Liechtenstein,secondary,5,50
+146,LIE,Liechtenstein,tertiary,6,50
+146,LIE,Liechtenstein,primary link,8,50
+146,LIE,Liechtenstein,unclassified,9,50
+146,LIE,Liechtenstein,residential,11,50
+146,LIE,Liechtenstein,service,12,50
+146,LIE,Liechtenstein,track,13,50
+146,LIE,Liechtenstein,other,15,80
+147,LTU,Lithuania,motorway,1,130
+147,LTU,Lithuania,trunk,2,70
+147,LTU,Lithuania,primary,4,50
+147,LTU,Lithuania,secondary,5,50
+147,LTU,Lithuania,tertiary,6,50
+147,LTU,Lithuania,motorway link,7,90
+147,LTU,Lithuania,primary link,8,50
+147,LTU,Lithuania,unclassified,9,50
+147,LTU,Lithuania,residential,11,50
+147,LTU,Lithuania,service,12,20
+147,LTU,Lithuania,track,13,50
+147,LTU,Lithuania,pedestrian,14,30
+147,LTU,Lithuania,other,15,50
+148,LUX,Luxembourg,motorway,1,130
+148,LUX,Luxembourg,trunk,2,70
+148,LUX,Luxembourg,primary,4,50
+148,LUX,Luxembourg,secondary,5,50
+148,LUX,Luxembourg,tertiary,6,50
+148,LUX,Luxembourg,motorway link,7,90
+148,LUX,Luxembourg,primary link,8,50
+148,LUX,Luxembourg,unclassified,9,50
+148,LUX,Luxembourg,residential,11,30
+148,LUX,Luxembourg,service,12,30
+148,LUX,Luxembourg,track,13,30
+148,LUX,Luxembourg,pedestrian,14,20
+148,LUX,Luxembourg,other,15,50
+149,MAC,Macau,primary,4,50
+149,MAC,Macau,secondary,5,60
+149,MAC,Macau,tertiary,6,60
+149,MAC,Macau,primary link,8,40
+149,MAC,Macau,unclassified,9,40
+149,MAC,Macau,residential,11,60
+149,MAC,Macau,service,12,30
+150,MDG,Madagascar,primary,4,40
+150,MDG,Madagascar,secondary,5,55
+150,MDG,Madagascar,tertiary,6,30
+150,MDG,Madagascar,primary link,8,55
+150,MDG,Madagascar,unclassified,9,20
+150,MDG,Madagascar,residential,11,20
+150,MDG,Madagascar,service,12,20
+150,MDG,Madagascar,track,13,20
+150,MDG,Madagascar,other,15,25
+152,MWI,Malawi,trunk,2,100
+152,MWI,Malawi,primary,4,60
+152,MWI,Malawi,secondary,5,30
+152,MWI,Malawi,tertiary,6,20
+152,MWI,Malawi,unclassified,9,40
+152,MWI,Malawi,residential,11,50
+152,MWI,Malawi,service,12,20
+152,MWI,Malawi,track,13,30
+152,MWI,Malawi,other,15,45
+153,MYS,Malaysia,motorway,1,110
+153,MYS,Malaysia,trunk,2,80
+153,MYS,Malaysia,primary,4,70
+153,MYS,Malaysia,secondary,5,50
+153,MYS,Malaysia,tertiary,6,50
+153,MYS,Malaysia,motorway link,7,50
+153,MYS,Malaysia,primary link,8,50
+153,MYS,Malaysia,unclassified,9,40
+153,MYS,Malaysia,residential,11,40
+153,MYS,Malaysia,service,12,30
+153,MYS,Malaysia,track,13,40
+153,MYS,Malaysia,pedestrian,14,40
+153,MYS,Malaysia,other,15,50
+154,MDV,Maldives,secondary,5,45
+154,MDV,Maldives,tertiary,6,30
+154,MDV,Maldives,unclassified,9,30
+154,MDV,Maldives,residential,11,25
+154,MDV,Maldives,service,12,30
+155,MLI,Mali,trunk,2,50
+155,MLI,Mali,primary,4,60
+155,MLI,Mali,secondary,5,60
+155,MLI,Mali,tertiary,6,60
+155,MLI,Mali,unclassified,9,50
+155,MLI,Mali,residential,11,30
+155,MLI,Mali,service,12,20
+155,MLI,Mali,track,13,35
+156,MLT,Malta,trunk,2,60
+156,MLT,Malta,primary,4,60
+156,MLT,Malta,secondary,5,50
+156,MLT,Malta,tertiary,6,32.5
+156,MLT,Malta,primary link,8,30
+156,MLT,Malta,unclassified,9,30
+156,MLT,Malta,residential,11,30
+156,MLT,Malta,service,12,20
+156,MLT,Malta,track,13,60
+156,MLT,Malta,pedestrian,14,40
+156,MLT,Malta,other,15,30
+158,MTQ,Martinique,motorway,1,70
+158,MTQ,Martinique,trunk,2,70
+158,MTQ,Martinique,primary,4,70
+158,MTQ,Martinique,secondary,5,50
+158,MTQ,Martinique,tertiary,6,50
+158,MTQ,Martinique,motorway link,7,50
+158,MTQ,Martinique,primary link,8,30
+158,MTQ,Martinique,unclassified,9,50
+158,MTQ,Martinique,residential,11,30
+158,MTQ,Martinique,service,12,25
+158,MTQ,Martinique,other,15,60
+159,MRT,Mauritania,trunk,2,90
+159,MRT,Mauritania,primary,4,50
+159,MRT,Mauritania,secondary,5,50
+159,MRT,Mauritania,tertiary,6,50
+159,MRT,Mauritania,unclassified,9,50
+159,MRT,Mauritania,residential,11,20
+159,MRT,Mauritania,service,12,50
+159,MRT,Mauritania,other,15,90
+160,MUS,Mauritius,trunk,2,110
+160,MUS,Mauritius,primary,4,60
+160,MUS,Mauritius,secondary,5,60
+160,MUS,Mauritius,tertiary,6,40
+160,MUS,Mauritius,primary link,8,40
+160,MUS,Mauritius,unclassified,9,40
+160,MUS,Mauritius,residential,11,40
+160,MUS,Mauritius,service,12,30
+160,MUS,Mauritius,track,13,20
+160,MUS,Mauritius,other,15,40
+161,MYT,Mayotte,primary,4,50
+161,MYT,Mayotte,secondary,5,50
+161,MYT,Mayotte,tertiary,6,50
+161,MYT,Mayotte,unclassified,9,40
+161,MYT,Mayotte,residential,11,30
+161,MYT,Mayotte,service,12,30
+161,MYT,Mayotte,track,13,30
+165,MDA,Moldova,trunk,2,50
+165,MDA,Moldova,primary,4,50
+165,MDA,Moldova,secondary,5,50
+165,MDA,Moldova,tertiary,6,50
+165,MDA,Moldova,primary link,8,50
+165,MDA,Moldova,unclassified,9,40
+165,MDA,Moldova,road,10,35
+165,MDA,Moldova,residential,11,50
+165,MDA,Moldova,service,12,20
+165,MDA,Moldova,track,13,30
+165,MDA,Moldova,pedestrian,14,20
+165,MDA,Moldova,other,15,35
+166,MCO,Monaco,primary,4,50
+166,MCO,Monaco,secondary,5,30
+166,MCO,Monaco,tertiary,6,30
+166,MCO,Monaco,primary link,8,50
+166,MCO,Monaco,unclassified,9,10
+166,MCO,Monaco,residential,11,50
+166,MCO,Monaco,service,12,20
+166,MCO,Monaco,pedestrian,14,40
+167,MNG,Mongolia,trunk,2,60
+167,MNG,Mongolia,primary,4,60
+167,MNG,Mongolia,secondary,5,60
+167,MNG,Mongolia,tertiary,6,60
+167,MNG,Mongolia,primary link,8,60
+167,MNG,Mongolia,unclassified,9,40
+167,MNG,Mongolia,road,10,70
+167,MNG,Mongolia,residential,11,40
+167,MNG,Mongolia,service,12,30
+167,MNG,Mongolia,track,13,40
+167,MNG,Mongolia,other,15,60
+169,MAR,Morocco,motorway,1,120
+169,MAR,Morocco,trunk,2,60
+169,MAR,Morocco,primary,4,60
+169,MAR,Morocco,secondary,5,60
+169,MAR,Morocco,tertiary,6,60
+169,MAR,Morocco,motorway link,7,60
+169,MAR,Morocco,primary link,8,40
+169,MAR,Morocco,unclassified,9,60
+169,MAR,Morocco,residential,11,40
+169,MAR,Morocco,service,12,40
+169,MAR,Morocco,track,13,20
+169,MAR,Morocco,pedestrian,14,60
+169,MAR,Morocco,other,15,60
+170,MOZ,Mozambique,trunk,2,80
+170,MOZ,Mozambique,primary,4,60
+170,MOZ,Mozambique,secondary,5,55
+170,MOZ,Mozambique,tertiary,6,40
+170,MOZ,Mozambique,unclassified,9,40
+170,MOZ,Mozambique,residential,11,30
+170,MOZ,Mozambique,service,12,40
+170,MOZ,Mozambique,track,13,35
+170,MOZ,Mozambique,other,15,20
+172,NAM,Namibia,trunk,2,120
+172,NAM,Namibia,primary,4,120
+172,NAM,Namibia,secondary,5,100
+172,NAM,Namibia,tertiary,6,60
+172,NAM,Namibia,unclassified,9,60
+172,NAM,Namibia,residential,11,60
+172,NAM,Namibia,service,12,30
+172,NAM,Namibia,track,13,40
+172,NAM,Namibia,other,15,60
+173,NRU,Nauru,primary,4,50
+173,NRU,Nauru,unclassified,9,50
+173,NRU,Nauru,residential,11,50
+173,NRU,Nauru,service,12,50
+173,NRU,Nauru,track,13,50
+175,NPL,Nepal,trunk,2,60
+175,NPL,Nepal,primary,4,30
+175,NPL,Nepal,secondary,5,40
+175,NPL,Nepal,tertiary,6,30
+175,NPL,Nepal,unclassified,9,30
+175,NPL,Nepal,road,10,20
+175,NPL,Nepal,residential,11,30
+175,NPL,Nepal,service,12,30
+175,NPL,Nepal,track,13,30
+175,NPL,Nepal,pedestrian,14,20
+175,NPL,Nepal,other,15,20
+176,ANT,Netherlands Antilles,primary,4,60
+176,ANT,Netherlands Antilles,secondary,5,60
+176,ANT,Netherlands Antilles,tertiary,6,40
+176,ANT,Netherlands Antilles,primary link,8,60
+176,ANT,Netherlands Antilles,unclassified,9,30
+176,ANT,Netherlands Antilles,residential,11,40
+176,ANT,Netherlands Antilles,service,12,20
+176,ANT,Netherlands Antilles,pedestrian,14,25
+176,ANT,Netherlands Antilles,other,15,20
+177,NLD,Netherlands,motorway,1,120
+177,NLD,Netherlands,trunk,2,100
+177,NLD,Netherlands,primary,4,80
+177,NLD,Netherlands,secondary,5,50
+177,NLD,Netherlands,tertiary,6,50
+177,NLD,Netherlands,motorway link,7,100
+177,NLD,Netherlands,primary link,8,50
+177,NLD,Netherlands,unclassified,9,50
+177,NLD,Netherlands,road,10,40
+177,NLD,Netherlands,residential,11,30
+177,NLD,Netherlands,service,12,30
+177,NLD,Netherlands,track,13,60
+177,NLD,Netherlands,pedestrian,14,30
+177,NLD,Netherlands,other,15,30
+178,NCL,New Caledonia,motorway,1,110
+178,NCL,New Caledonia,trunk,2,70
+178,NCL,New Caledonia,primary,4,70
+178,NCL,New Caledonia,secondary,5,50
+178,NCL,New Caledonia,tertiary,6,50
+178,NCL,New Caledonia,motorway link,7,50
+178,NCL,New Caledonia,primary link,8,50
+178,NCL,New Caledonia,unclassified,9,50
+178,NCL,New Caledonia,residential,11,30
+178,NCL,New Caledonia,service,12,10
+178,NCL,New Caledonia,track,13,30
+178,NCL,New Caledonia,other,15,30
+179,NZL,New Zealand,motorway,1,100
+179,NZL,New Zealand,trunk,2,80
+179,NZL,New Zealand,primary,4,50
+179,NZL,New Zealand,secondary,5,50
+179,NZL,New Zealand,tertiary,6,50
+179,NZL,New Zealand,motorway link,7,80
+179,NZL,New Zealand,primary link,8,50
+179,NZL,New Zealand,unclassified,9,50
+179,NZL,New Zealand,residential,11,50
+179,NZL,New Zealand,service,12,20
+179,NZL,New Zealand,track,13,40
+179,NZL,New Zealand,pedestrian,14,30
+179,NZL,New Zealand,other,15,50
+180,NIC,Nicaragua,trunk,2,80
+180,NIC,Nicaragua,primary,4,80
+180,NIC,Nicaragua,secondary,5,55
+180,NIC,Nicaragua,tertiary,6,45
+180,NIC,Nicaragua,primary link,8,80
+180,NIC,Nicaragua,unclassified,9,35
+180,NIC,Nicaragua,road,10,20
+180,NIC,Nicaragua,residential,11,35
+180,NIC,Nicaragua,service,12,30
+180,NIC,Nicaragua,track,13,30
+180,NIC,Nicaragua,pedestrian,14,20
+180,NIC,Nicaragua,other,15,30
+181,NER,Niger,trunk,2,30
+181,NER,Niger,primary,4,90
+181,NER,Niger,secondary,5,50
+181,NER,Niger,tertiary,6,50
+181,NER,Niger,primary link,8,60
+181,NER,Niger,unclassified,9,50
+181,NER,Niger,residential,11,30
+181,NER,Niger,service,12,10
+182,NGA,Nigeria,motorway,1,100
+182,NGA,Nigeria,trunk,2,120
+182,NGA,Nigeria,primary,4,70
+182,NGA,Nigeria,secondary,5,60
+182,NGA,Nigeria,tertiary,6,50
+182,NGA,Nigeria,motorway link,7,20
+182,NGA,Nigeria,unclassified,9,50
+182,NGA,Nigeria,residential,11,30
+182,NGA,Nigeria,service,12,20
+182,NGA,Nigeria,track,13,30
+182,NGA,Nigeria,other,15,40
+185,MNP,Northern Mariana Islands,secondary,5,40.2335
+185,MNP,Northern Mariana Islands,tertiary,6,40.2335
+185,MNP,Northern Mariana Islands,service,12,16.0934
+186,NOR,Norway,motorway,1,100
+186,NOR,Norway,trunk,2,70
+186,NOR,Norway,primary,4,60
+186,NOR,Norway,secondary,5,60
+186,NOR,Norway,tertiary,6,50
+186,NOR,Norway,motorway link,7,80
+186,NOR,Norway,primary link,8,50
+186,NOR,Norway,unclassified,9,40
+186,NOR,Norway,road,10,30
+186,NOR,Norway,residential,11,30
+186,NOR,Norway,service,12,30
+186,NOR,Norway,track,13,30
+186,NOR,Norway,pedestrian,14,30
+186,NOR,Norway,other,15,30
+187,OMN,Oman,motorway,1,120
+187,OMN,Oman,trunk,2,120
+187,OMN,Oman,primary,4,80
+187,OMN,Oman,secondary,5,60
+187,OMN,Oman,tertiary,6,60
+187,OMN,Oman,motorway link,7,60
+187,OMN,Oman,primary link,8,80
+187,OMN,Oman,unclassified,9,60
+187,OMN,Oman,road,10,60
+187,OMN,Oman,residential,11,60
+187,OMN,Oman,service,12,60
+187,OMN,Oman,track,13,60
+187,OMN,Oman,other,15,55
+188,PAK,Pakistan,motorway,1,120
+188,PAK,Pakistan,trunk,2,100
+188,PAK,Pakistan,primary,4,80
+188,PAK,Pakistan,secondary,5,60
+188,PAK,Pakistan,tertiary,6,50
+188,PAK,Pakistan,motorway link,7,50
+188,PAK,Pakistan,primary link,8,50
+188,PAK,Pakistan,unclassified,9,40
+188,PAK,Pakistan,road,10,30
+188,PAK,Pakistan,residential,11,40
+188,PAK,Pakistan,service,12,30
+188,PAK,Pakistan,track,13,30
+188,PAK,Pakistan,pedestrian,14,20
+188,PAK,Pakistan,other,15,40
+191,PAN,Panama,motorway,1,90
+191,PAN,Panama,trunk,2,80
+191,PAN,Panama,primary,4,60
+191,PAN,Panama,secondary,5,60
+191,PAN,Panama,tertiary,6,40
+191,PAN,Panama,motorway link,7,30
+191,PAN,Panama,primary link,8,40
+191,PAN,Panama,unclassified,9,40
+191,PAN,Panama,residential,11,40
+191,PAN,Panama,service,12,25
+191,PAN,Panama,track,13,25
+191,PAN,Panama,pedestrian,14,20
+191,PAN,Panama,other,15,30
+194,PRY,Paraguay,motorway,1,60
+194,PRY,Paraguay,trunk,2,60
+194,PRY,Paraguay,primary,4,60
+194,PRY,Paraguay,secondary,5,60
+194,PRY,Paraguay,tertiary,6,40
+194,PRY,Paraguay,motorway link,7,40
+194,PRY,Paraguay,primary link,8,60
+194,PRY,Paraguay,unclassified,9,50
+194,PRY,Paraguay,residential,11,40
+194,PRY,Paraguay,service,12,20
+194,PRY,Paraguay,track,13,40
+194,PRY,Paraguay,pedestrian,14,40
+194,PRY,Paraguay,other,15,40
+196,PHL,Philippines,motorway,1,100
+196,PHL,Philippines,trunk,2,60
+196,PHL,Philippines,primary,4,60
+196,PHL,Philippines,secondary,5,40
+196,PHL,Philippines,tertiary,6,40
+196,PHL,Philippines,motorway link,7,40
+196,PHL,Philippines,primary link,8,40
+196,PHL,Philippines,unclassified,9,30
+196,PHL,Philippines,road,10,20
+196,PHL,Philippines,residential,11,30
+196,PHL,Philippines,service,12,20
+196,PHL,Philippines,track,13,20
+196,PHL,Philippines,pedestrian,14,20
+196,PHL,Philippines,other,15,25
+198,POL,Poland,motorway,1,140
+198,POL,Poland,trunk,2,120
+198,POL,Poland,primary,4,60
+198,POL,Poland,secondary,5,50
+198,POL,Poland,tertiary,6,50
+198,POL,Poland,motorway link,7,50
+198,POL,Poland,primary link,8,50
+198,POL,Poland,unclassified,9,50
+198,POL,Poland,road,10,30
+198,POL,Poland,residential,11,40
+198,POL,Poland,service,12,30
+198,POL,Poland,track,13,50
+198,POL,Poland,pedestrian,14,20
+198,POL,Poland,other,15,30
+199,PRT,Portugal,motorway,1,120
+74578,AZO,Azores,trunk,2,90
+199,PRT,Portugal,trunk,2,90
+74578,AZO,Azores,primary,4,60
+199,PRT,Portugal,primary,4,50
+74578,AZO,Azores,secondary,5,50
+199,PRT,Portugal,secondary,5,50
+74578,AZO,Azores,tertiary,6,50
+199,PRT,Portugal,tertiary,6,50
+199,PRT,Portugal,motorway link,7,60
+74578,AZO,Azores,primary link,8,40
+199,PRT,Portugal,primary link,8,50
+74578,AZO,Azores,unclassified,9,40
+199,PRT,Portugal,unclassified,9,50
+74578,AZO,Azores,road,10,40
+199,PRT,Portugal,road,10,30
+74578,AZO,Azores,residential,11,50
+199,PRT,Portugal,residential,11,50
+74578,AZO,Azores,service,12,30
+199,PRT,Portugal,service,12,30
+74578,AZO,Azores,track,13,55
+199,PRT,Portugal,track,13,30
+199,PRT,Portugal,pedestrian,14,50
+199,PRT,Portugal,other,15,50
+74578,AZO,Azores,other,15,50
+200,PRI,Puerto Rico,motorway,1,88.5137
+200,PRI,Puerto Rico,trunk,2,80.467
+200,PRI,Puerto Rico,primary,4,56.3269
+200,PRI,Puerto Rico,secondary,5,56.3269
+200,PRI,Puerto Rico,tertiary,6,56.3269
+200,PRI,Puerto Rico,motorway link,7,64.3736
+200,PRI,Puerto Rico,primary link,8,15
+200,PRI,Puerto Rico,unclassified,9,20
+200,PRI,Puerto Rico,residential,11,24.1401
+200,PRI,Puerto Rico,service,12,25
+200,PRI,Puerto Rico,track,13,40.2335
+200,PRI,Puerto Rico,other,15,30
+201,QAT,Qatar,motorway,1,120
+201,QAT,Qatar,trunk,2,80
+201,QAT,Qatar,primary,4,80
+201,QAT,Qatar,secondary,5,80
+201,QAT,Qatar,tertiary,6,50
+201,QAT,Qatar,motorway link,7,60
+201,QAT,Qatar,primary link,8,60
+201,QAT,Qatar,unclassified,9,50
+201,QAT,Qatar,residential,11,50
+201,QAT,Qatar,service,12,50
+201,QAT,Qatar,track,13,70
+201,QAT,Qatar,other,15,50
+203,ROU,Romania,motorway,1,130
+203,ROU,Romania,trunk,2,50
+203,ROU,Romania,primary,4,50
+203,ROU,Romania,secondary,5,50
+203,ROU,Romania,tertiary,6,50
+203,ROU,Romania,motorway link,7,50
+203,ROU,Romania,primary link,8,50
+203,ROU,Romania,unclassified,9,50
+203,ROU,Romania,road,10,20
+203,ROU,Romania,residential,11,50
+203,ROU,Romania,service,12,30
+203,ROU,Romania,track,13,50
+203,ROU,Romania,pedestrian,14,20
+203,ROU,Romania,other,15,50
+204,RUS,Russia,motorway,1,110
+204,RUS,Russia,trunk,2,90
+204,RUS,Russia,primary,4,60
+204,RUS,Russia,secondary,5,60
+204,RUS,Russia,tertiary,6,60
+204,RUS,Russia,motorway link,7,90
+204,RUS,Russia,primary link,8,60
+204,RUS,Russia,unclassified,9,60
+204,RUS,Russia,road,10,40
+204,RUS,Russia,residential,11,50
+204,RUS,Russia,service,12,20
+204,RUS,Russia,track,13,20
+204,RUS,Russia,pedestrian,14,20
+204,RUS,Russia,other,15,60
+205,RWA,Rwanda,trunk,2,40
+205,RWA,Rwanda,primary,4,40
+205,RWA,Rwanda,secondary,5,40
+205,RWA,Rwanda,tertiary,6,40
+205,RWA,Rwanda,unclassified,9,40
+205,RWA,Rwanda,residential,11,40
+205,RWA,Rwanda,service,12,35
+205,RWA,Rwanda,track,13,40
+205,RWA,Rwanda,other,15,40
+206,REU,Réunion,motorway,1,110
+206,REU,Réunion,trunk,2,70
+206,REU,Réunion,primary,4,50
+206,REU,Réunion,secondary,5,50
+206,REU,Réunion,tertiary,6,50
+206,REU,Réunion,motorway link,7,90
+206,REU,Réunion,primary link,8,60
+206,REU,Réunion,unclassified,9,40
+206,REU,Réunion,residential,11,30
+206,REU,Réunion,service,12,30
+206,REU,Réunion,track,13,20
+206,REU,Réunion,other,15,50
+207,SHN,Saint Helena,tertiary,6,48.2802
+208,KNA,Saint Kitts and Nevis,primary,4,40.2335
+208,KNA,Saint Kitts and Nevis,secondary,5,32.1868
+208,KNA,Saint Kitts and Nevis,tertiary,6,32.1868
+208,KNA,Saint Kitts and Nevis,unclassified,9,24.1401
+208,KNA,Saint Kitts and Nevis,residential,11,32.1868
+208,KNA,Saint Kitts and Nevis,service,12,32.1868
+209,LCA,Saint Lucia,primary,4,40
+209,LCA,Saint Lucia,secondary,5,48.2802
+209,LCA,Saint Lucia,tertiary,6,24.1401
+209,LCA,Saint Lucia,unclassified,9,22.07005
+209,LCA,Saint Lucia,residential,11,48.2802
+209,LCA,Saint Lucia,service,12,30
+211,VCT,Saint Vincent and the Grenadines,primary,4,50
+211,VCT,Saint Vincent and the Grenadines,unclassified,9,30
+211,VCT,Saint Vincent and the Grenadines,residential,11,30
+211,VCT,Saint Vincent and the Grenadines,service,12,20
+212,WSM,Samoa,unclassified,9,45
+212,WSM,Samoa,residential,11,20
+212,WSM,Samoa,track,13,20
+213,SMR,San Marino,primary,4,50
+213,SMR,San Marino,tertiary,6,50
+213,SMR,San Marino,unclassified,9,30
+213,SMR,San Marino,residential,11,30
+213,SMR,San Marino,service,12,20
+214,STP,Sao Tome And Principe,residential,11,50
+215,SAU,Saudi Arabia,motorway,1,110
+215,SAU,Saudi Arabia,trunk,2,90
+215,SAU,Saudi Arabia,primary,4,70
+215,SAU,Saudi Arabia,secondary,5,60
+215,SAU,Saudi Arabia,tertiary,6,36
+215,SAU,Saudi Arabia,motorway link,7,80
+215,SAU,Saudi Arabia,primary link,8,60
+215,SAU,Saudi Arabia,unclassified,9,30
+215,SAU,Saudi Arabia,road,10,60
+215,SAU,Saudi Arabia,residential,11,20
+215,SAU,Saudi Arabia,service,12,10
+215,SAU,Saudi Arabia,track,13,40
+215,SAU,Saudi Arabia,other,15,40
+217,SEN,Senegal,motorway,1,110
+217,SEN,Senegal,trunk,2,90
+217,SEN,Senegal,primary,4,90
+217,SEN,Senegal,secondary,5,50
+217,SEN,Senegal,tertiary,6,50
+217,SEN,Senegal,motorway link,7,50
+217,SEN,Senegal,unclassified,9,50
+217,SEN,Senegal,residential,11,30
+217,SEN,Senegal,service,12,30
+217,SEN,Senegal,track,13,30
+217,SEN,Senegal,other,15,60
+220,SYC,Seychelles,primary,4,65
+220,SYC,Seychelles,secondary,5,40
+220,SYC,Seychelles,tertiary,6,40
+220,SYC,Seychelles,residential,11,20
+220,SYC,Seychelles,service,12,20
+221,SLE,Sierra Leone,primary,4,80
+221,SLE,Sierra Leone,secondary,5,40
+221,SLE,Sierra Leone,tertiary,6,20
+221,SLE,Sierra Leone,unclassified,9,25
+221,SLE,Sierra Leone,residential,11,20
+221,SLE,Sierra Leone,service,12,20
+221,SLE,Sierra Leone,other,15,20
+222,SGP,Singapore,motorway,1,90
+222,SGP,Singapore,trunk,2,70
+222,SGP,Singapore,primary,4,60
+222,SGP,Singapore,secondary,5,50
+222,SGP,Singapore,tertiary,6,50
+222,SGP,Singapore,motorway link,7,50
+222,SGP,Singapore,primary link,8,50
+222,SGP,Singapore,unclassified,9,50
+222,SGP,Singapore,residential,11,50
+222,SGP,Singapore,service,12,40
+222,SGP,Singapore,track,13,40
+222,SGP,Singapore,pedestrian,14,50
+222,SGP,Singapore,other,15,50
+223,SVK,Slovakia,motorway,1,130
+223,SVK,Slovakia,trunk,2,130
+223,SVK,Slovakia,primary,4,50
+223,SVK,Slovakia,secondary,5,50
+223,SVK,Slovakia,tertiary,6,50
+223,SVK,Slovakia,motorway link,7,90
+223,SVK,Slovakia,primary link,8,50
+223,SVK,Slovakia,unclassified,9,50
+223,SVK,Slovakia,road,10,40
+223,SVK,Slovakia,residential,11,40
+223,SVK,Slovakia,service,12,20
+223,SVK,Slovakia,track,13,30
+223,SVK,Slovakia,pedestrian,14,20
+223,SVK,Slovakia,other,15,50
+224,SVN,Slovenia,motorway,1,130
+224,SVN,Slovenia,trunk,2,110
+224,SVN,Slovenia,primary,4,50
+224,SVN,Slovenia,secondary,5,50
+224,SVN,Slovenia,tertiary,6,50
+224,SVN,Slovenia,motorway link,7,40
+224,SVN,Slovenia,primary link,8,50
+224,SVN,Slovenia,unclassified,9,40
+224,SVN,Slovenia,road,10,40
+224,SVN,Slovenia,residential,11,30
+224,SVN,Slovenia,service,12,30
+224,SVN,Slovenia,track,13,30
+224,SVN,Slovenia,pedestrian,14,20
+224,SVN,Slovenia,other,15,30
+226,SOM,Somalia,primary,4,56
+226,SOM,Somalia,secondary,5,56
+226,SOM,Somalia,tertiary,6,40
+226,SOM,Somalia,unclassified,9,56
+226,SOM,Somalia,residential,11,56
+226,SOM,Somalia,service,12,20
+226,SOM,Somalia,track,13,30
+229,ESP,Spain,motorway,1,120
+229,ESP,Spain,trunk,2,70
+229,ESP,Spain,primary,4,50
+229,ESP,Spain,secondary,5,50
+229,ESP,Spain,tertiary,6,50
+229,ESP,Spain,motorway link,7,60
+229,ESP,Spain,primary link,8,50
+229,ESP,Spain,unclassified,9,40
+229,ESP,Spain,road,10,20
+229,ESP,Spain,residential,11,40
+229,ESP,Spain,service,12,30
+229,ESP,Spain,track,13,30
+229,ESP,Spain,pedestrian,14,20
+229,ESP,Spain,other,15,40
+231,LKA,Sri Lanka,motorway,1,100
+231,LKA,Sri Lanka,trunk,2,60
+231,LKA,Sri Lanka,primary,4,60
+231,LKA,Sri Lanka,secondary,5,50
+231,LKA,Sri Lanka,tertiary,6,40
+231,LKA,Sri Lanka,motorway link,7,40
+231,LKA,Sri Lanka,primary link,8,50
+231,LKA,Sri Lanka,unclassified,9,30
+231,LKA,Sri Lanka,road,10,30
+231,LKA,Sri Lanka,residential,11,30
+231,LKA,Sri Lanka,service,12,20
+231,LKA,Sri Lanka,track,13,25
+231,LKA,Sri Lanka,other,15,30
+233,SUR,Suriname,primary,4,60
+233,SUR,Suriname,secondary,5,50
+233,SUR,Suriname,tertiary,6,40
+233,SUR,Suriname,unclassified,9,30
+233,SUR,Suriname,residential,11,40
+233,SUR,Suriname,service,12,40
+233,SUR,Suriname,track,13,40
+233,SUR,Suriname,other,15,40
+234,SJM,Svalbard and Jan Mayen Islands,residential,11,30
+235,SWZ,Eswatini,motorway,1,100
+235,SWZ,Eswatini,trunk,2,120
+235,SWZ,Eswatini,primary,4,80
+235,SWZ,Eswatini,secondary,5,60
+235,SWZ,Eswatini,tertiary,6,60
+235,SWZ,Eswatini,unclassified,9,40
+235,SWZ,Eswatini,residential,11,60
+235,SWZ,Eswatini,service,12,20
+236,SWE,Sweden,motorway,1,110
+236,SWE,Sweden,trunk,2,90
+236,SWE,Sweden,primary,4,70
+236,SWE,Sweden,secondary,5,50
+236,SWE,Sweden,tertiary,6,50
+236,SWE,Sweden,motorway link,7,80
+236,SWE,Sweden,primary link,8,70
+236,SWE,Sweden,unclassified,9,50
+236,SWE,Sweden,road,10,70
+236,SWE,Sweden,residential,11,30
+236,SWE,Sweden,service,12,30
+236,SWE,Sweden,track,13,70
+236,SWE,Sweden,pedestrian,14,5
+236,SWE,Sweden,other,15,50
+237,CHE,Switzerland,motorway,1,120
+237,CHE,Switzerland,trunk,2,80
+237,CHE,Switzerland,primary,4,50
+237,CHE,Switzerland,secondary,5,50
+237,CHE,Switzerland,tertiary,6,50
+237,CHE,Switzerland,motorway link,7,80
+237,CHE,Switzerland,primary link,8,50
+237,CHE,Switzerland,unclassified,9,50
+237,CHE,Switzerland,road,10,50
+237,CHE,Switzerland,residential,11,30
+237,CHE,Switzerland,service,12,30
+237,CHE,Switzerland,track,13,30
+237,CHE,Switzerland,pedestrian,14,25
+237,CHE,Switzerland,other,15,30
+238,SYR,Syria,motorway,1,110
+238,SYR,Syria,trunk,2,80
+238,SYR,Syria,primary,4,70
+238,SYR,Syria,secondary,5,50
+238,SYR,Syria,tertiary,6,45
+238,SYR,Syria,primary link,8,51.21015
+238,SYR,Syria,unclassified,9,30
+238,SYR,Syria,road,10,30
+238,SYR,Syria,residential,11,30
+238,SYR,Syria,service,12,30
+238,SYR,Syria,track,13,80
+238,SYR,Syria,other,15,30
+239,TJK,Tajikistan,trunk,2,60
+239,TJK,Tajikistan,primary,4,60
+239,TJK,Tajikistan,secondary,5,60
+239,TJK,Tajikistan,tertiary,6,60
+239,TJK,Tajikistan,unclassified,9,60
+239,TJK,Tajikistan,residential,11,40
+239,TJK,Tajikistan,service,12,20
+239,TJK,Tajikistan,track,13,50
+239,TJK,Tajikistan,other,15,60
+240,THA,Thailand,motorway,1,120
+240,THA,Thailand,trunk,2,80
+240,THA,Thailand,primary,4,80
+240,THA,Thailand,secondary,5,60
+240,THA,Thailand,tertiary,6,60
+240,THA,Thailand,motorway link,7,40
+240,THA,Thailand,primary link,8,60
+240,THA,Thailand,unclassified,9,50
+240,THA,Thailand,residential,11,30
+240,THA,Thailand,service,12,20
+240,THA,Thailand,track,13,30
+240,THA,Thailand,pedestrian,14,8
+240,THA,Thailand,other,15,30
+241,MKD,North Macedonia,motorway,1,120
+241,MKD,North Macedonia,trunk,2,80
+241,MKD,North Macedonia,primary,4,60
+241,MKD,North Macedonia,secondary,5,50
+241,MKD,North Macedonia,tertiary,6,50
+241,MKD,North Macedonia,motorway link,7,40
+241,MKD,North Macedonia,primary link,8,50
+241,MKD,North Macedonia,unclassified,9,40
+241,MKD,North Macedonia,residential,11,30
+241,MKD,North Macedonia,service,12,30
+241,MKD,North Macedonia,track,13,30
+241,MKD,North Macedonia,other,15,50
+242,TLS,Timor-Leste,primary,4,24
+242,TLS,Timor-Leste,tertiary,6,40
+242,TLS,Timor-Leste,residential,11,20
+242,TLS,Timor-Leste,service,12,35
+243,TGO,Togo,trunk,2,90
+243,TGO,Togo,primary,4,75
+243,TGO,Togo,secondary,5,55
+243,TGO,Togo,tertiary,6,50
+243,TGO,Togo,unclassified,9,50
+243,TGO,Togo,residential,11,30
+243,TGO,Togo,service,12,10
+243,TGO,Togo,track,13,30
+243,TGO,Togo,other,15,30
+245,TON,Tonga,primary,4,50
+245,TON,Tonga,secondary,5,50
+245,TON,Tonga,unclassified,9,30
+245,TON,Tonga,residential,11,20
+246,TTO,Trinidad and Tobago,motorway,1,100
+246,TTO,Trinidad and Tobago,trunk,2,50
+246,TTO,Trinidad and Tobago,primary,4,50
+246,TTO,Trinidad and Tobago,secondary,5,50
+246,TTO,Trinidad and Tobago,tertiary,6,50
+246,TTO,Trinidad and Tobago,motorway link,7,50
+246,TTO,Trinidad and Tobago,primary link,8,50
+246,TTO,Trinidad and Tobago,unclassified,9,50
+246,TTO,Trinidad and Tobago,residential,11,50
+246,TTO,Trinidad and Tobago,service,12,30
+246,TTO,Trinidad and Tobago,track,13,50
+246,TTO,Trinidad and Tobago,other,15,50
+248,TUN,Tunisia,motorway,1,110
+248,TUN,Tunisia,trunk,2,70
+248,TUN,Tunisia,primary,4,50
+248,TUN,Tunisia,secondary,5,50
+248,TUN,Tunisia,tertiary,6,50
+248,TUN,Tunisia,motorway link,7,50
+248,TUN,Tunisia,primary link,8,50
+248,TUN,Tunisia,unclassified,9,50
+248,TUN,Tunisia,residential,11,30
+248,TUN,Tunisia,service,12,20
+248,TUN,Tunisia,track,13,35
+248,TUN,Tunisia,pedestrian,14,10
+248,TUN,Tunisia,other,15,50
+249,TUR,Turkey,motorway,1,120
+249,TUR,Turkey,trunk,2,80
+249,TUR,Turkey,primary,4,50
+249,TUR,Turkey,secondary,5,50
+249,TUR,Turkey,tertiary,6,50
+249,TUR,Turkey,motorway link,7,50
+249,TUR,Turkey,primary link,8,30
+249,TUR,Turkey,unclassified,9,50
+249,TUR,Turkey,road,10,35
+249,TUR,Turkey,residential,11,50
+249,TUR,Turkey,service,12,30
+249,TUR,Turkey,track,13,50
+249,TUR,Turkey,pedestrian,14,30
+249,TUR,Turkey,other,15,30
+250,TKM,Turkmenistan,trunk,2,90
+250,TKM,Turkmenistan,primary,4,60
+250,TKM,Turkmenistan,secondary,5,60
+250,TKM,Turkmenistan,tertiary,6,50
+250,TKM,Turkmenistan,primary link,8,50
+250,TKM,Turkmenistan,unclassified,9,50
+250,TKM,Turkmenistan,residential,11,40
+250,TKM,Turkmenistan,service,12,40
+250,TKM,Turkmenistan,track,13,30
+250,TKM,Turkmenistan,other,15,40
+251,TCA,Turks and Caicos islands,primary,4,64.3736
+251,TCA,Turks and Caicos islands,secondary,5,32.1868
+251,TCA,Turks and Caicos islands,tertiary,6,32.1868
+251,TCA,Turks and Caicos islands,unclassified,9,32.1868
+251,TCA,Turks and Caicos islands,residential,11,20
+251,TCA,Turks and Caicos islands,service,12,20
+252,TUV,Tuvalu,primary,4,40
+253,UGA,Uganda,motorway,1,100
+253,UGA,Uganda,trunk,2,80
+253,UGA,Uganda,primary,4,50
+253,UGA,Uganda,secondary,5,70
+253,UGA,Uganda,tertiary,6,50
+253,UGA,Uganda,primary link,8,50
+253,UGA,Uganda,unclassified,9,50
+253,UGA,Uganda,residential,11,30
+253,UGA,Uganda,service,12,20
+253,UGA,Uganda,track,13,30
+253,UGA,Uganda,other,15,50
+254,UKR,Ukraine,motorway,1,110
+254,UKR,Ukraine,trunk,2,90
+254,UKR,Ukraine,primary,4,50
+254,UKR,Ukraine,secondary,5,50
+254,UKR,Ukraine,tertiary,6,50
+254,UKR,Ukraine,motorway link,7,50
+254,UKR,Ukraine,primary link,8,50
+254,UKR,Ukraine,unclassified,9,50
+254,UKR,Ukraine,road,10,40
+254,UKR,Ukraine,residential,11,50
+254,UKR,Ukraine,service,12,20
+254,UKR,Ukraine,track,13,40
+254,UKR,Ukraine,pedestrian,14,20
+254,UKR,Ukraine,other,15,30
+255,ARE,United Arab Emirates,motorway,1,110
+255,ARE,United Arab Emirates,trunk,2,100
+255,ARE,United Arab Emirates,primary,4,80
+255,ARE,United Arab Emirates,secondary,5,60
+255,ARE,United Arab Emirates,tertiary,6,60
+255,ARE,United Arab Emirates,motorway link,7,60
+255,ARE,United Arab Emirates,primary link,8,80
+255,ARE,United Arab Emirates,unclassified,9,40
+255,ARE,United Arab Emirates,residential,11,40
+255,ARE,United Arab Emirates,service,12,40
+255,ARE,United Arab Emirates,track,13,40
+255,ARE,United Arab Emirates,pedestrian,14,30
+255,ARE,United Arab Emirates,other,15,60
+256,GBR,United Kingdom,motorway,1,112.6538
+256,GBR,United Kingdom,trunk,2,64.3736
+256,GBR,United Kingdom,primary,4,48.2802
+256,GBR,United Kingdom,secondary,5,48.2802
+256,GBR,United Kingdom,tertiary,6,48.2802
+256,GBR,United Kingdom,motorway link,7,112.6538
+256,GBR,United Kingdom,primary link,8,48.2802
+256,GBR,United Kingdom,unclassified,9,48.2802
+256,GBR,United Kingdom,road,10,32.1868
+256,GBR,United Kingdom,residential,11,48.2802
+256,GBR,United Kingdom,service,12,32.1868
+256,GBR,United Kingdom,track,13,48.2802
+256,GBR,United Kingdom,pedestrian,14,32.1868
+256,GBR,United Kingdom,other,15,48.2802
+257,TZA,Tanzania,trunk,2,50
+257,TZA,Tanzania,primary,4,60
+257,TZA,Tanzania,secondary,5,50
+257,TZA,Tanzania,tertiary,6,30
+257,TZA,Tanzania,unclassified,9,40
+257,TZA,Tanzania,residential,11,30
+257,TZA,Tanzania,service,12,25
+257,TZA,Tanzania,track,13,50
+257,TZA,Tanzania,other,15,30
+258,VIR,United States Virgin Islands,primary,4,43.16345
+258,VIR,United States Virgin Islands,secondary,5,48.2802
+258,VIR,United States Virgin Islands,tertiary,6,48.2802
+258,VIR,United States Virgin Islands,residential,11,32.1868
+259,USA,United States of America,motorway,1,104.6071
+259,USA,United States of America,trunk,2,88.5137
+259,USA,United States of America,primary,4,64.3736
+259,USA,United States of America,secondary,5,64.3736
+259,USA,United States of America,tertiary,6,56.3269
+259,USA,United States of America,motorway link,7,80.467
+259,USA,United States of America,primary link,8,56.3269
+259,USA,United States of America,unclassified,9,72.4203
+259,USA,United States of America,road,10,8.0467
+259,USA,United States of America,residential,11,40.2335
+259,USA,United States of America,service,12,24.1401
+259,USA,United States of America,track,13,72.4203
+259,USA,United States of America,pedestrian,14,40.2335
+259,USA,United States of America,other,15,56.3269
+260,URY,Uruguay,trunk,2,90
+260,URY,Uruguay,primary,4,60
+260,URY,Uruguay,secondary,5,45
+260,URY,Uruguay,tertiary,6,45
+260,URY,Uruguay,primary link,8,45
+260,URY,Uruguay,unclassified,9,45
+260,URY,Uruguay,residential,11,45
+260,URY,Uruguay,service,12,45
+260,URY,Uruguay,track,13,45
+260,URY,Uruguay,pedestrian,14,45
+260,URY,Uruguay,other,15,45
+261,UZB,Uzbekistan,trunk,2,70
+261,UZB,Uzbekistan,primary,4,70
+261,UZB,Uzbekistan,secondary,5,70
+261,UZB,Uzbekistan,tertiary,6,70
+261,UZB,Uzbekistan,primary link,8,70
+261,UZB,Uzbekistan,unclassified,9,40
+261,UZB,Uzbekistan,road,10,20
+261,UZB,Uzbekistan,residential,11,50
+261,UZB,Uzbekistan,service,12,20
+261,UZB,Uzbekistan,pedestrian,14,30
+261,UZB,Uzbekistan,other,15,50
+262,VUT,Vanuatu,secondary,5,40
+262,VUT,Vanuatu,tertiary,6,40
+262,VUT,Vanuatu,service,12,30
+263,VEN,Venezuela,motorway,1,90
+263,VEN,Venezuela,trunk,2,80
+263,VEN,Venezuela,primary,4,60
+263,VEN,Venezuela,secondary,5,40
+263,VEN,Venezuela,tertiary,6,40
+263,VEN,Venezuela,motorway link,7,30
+263,VEN,Venezuela,primary link,8,30
+263,VEN,Venezuela,unclassified,9,10
+263,VEN,Venezuela,road,10,15
+263,VEN,Venezuela,residential,11,30
+263,VEN,Venezuela,service,12,20
+263,VEN,Venezuela,track,13,30
+263,VEN,Venezuela,pedestrian,14,20
+263,VEN,Venezuela,other,15,30
+267,PSE,Palestinian Territories,motorway,1,80
+267,PSE,Palestinian Territories,trunk,2,80
+267,PSE,Palestinian Territories,primary,4,70
+267,PSE,Palestinian Territories,secondary,5,50
+267,PSE,Palestinian Territories,tertiary,6,50
+267,PSE,Palestinian Territories,motorway link,7,80
+267,PSE,Palestinian Territories,primary link,8,50
+267,PSE,Palestinian Territories,unclassified,9,40
+267,PSE,Palestinian Territories,road,10,40
+267,PSE,Palestinian Territories,residential,11,40
+267,PSE,Palestinian Territories,service,12,40
+267,PSE,Palestinian Territories,track,13,40
+267,PSE,Palestinian Territories,pedestrian,14,40
+267,PSE,Palestinian Territories,other,15,50
+268,ESH,Western Sahara,trunk,2,100
+268,ESH,Western Sahara,primary,4,60
+268,ESH,Western Sahara,secondary,5,60
+268,ESH,Western Sahara,tertiary,6,60
+268,ESH,Western Sahara,unclassified,9,100
+268,ESH,Western Sahara,residential,11,60
+268,ESH,Western Sahara,service,12,60
+268,ESH,Western Sahara,track,13,100
+269,YEM,Yemen,trunk,2,90
+269,YEM,Yemen,primary,4,90
+269,YEM,Yemen,secondary,5,75
+269,YEM,Yemen,tertiary,6,55
+269,YEM,Yemen,unclassified,9,30
+269,YEM,Yemen,residential,11,20
+269,YEM,Yemen,service,12,30
+270,ZMB,Zambia,trunk,2,80
+270,ZMB,Zambia,primary,4,60
+270,ZMB,Zambia,secondary,5,60
+270,ZMB,Zambia,tertiary,6,60
+270,ZMB,Zambia,unclassified,9,40
+270,ZMB,Zambia,residential,11,40
+270,ZMB,Zambia,service,12,40
+270,ZMB,Zambia,track,13,40
+270,ZMB,Zambia,other,15,20
+271,ZWE,Zimbabwe,trunk,2,120
+271,ZWE,Zimbabwe,primary,4,80
+271,ZWE,Zimbabwe,secondary,5,80
+271,ZWE,Zimbabwe,tertiary,6,60
+271,ZWE,Zimbabwe,primary link,8,60
+271,ZWE,Zimbabwe,unclassified,9,60
+271,ZWE,Zimbabwe,residential,11,60
+271,ZWE,Zimbabwe,service,12,40
+271,ZWE,Zimbabwe,track,13,40
+271,ZWE,Zimbabwe,other,15,60
+925,TWN,Taiwan,motorway,1,110
+925,TWN,Taiwan,trunk,2,80
+925,TWN,Taiwan,primary,4,60
+925,TWN,Taiwan,secondary,5,50
+925,TWN,Taiwan,tertiary,6,50
+925,TWN,Taiwan,motorway link,7,50
+925,TWN,Taiwan,primary link,8,40
+925,TWN,Taiwan,unclassified,9,40
+925,TWN,Taiwan,road,10,22.5
+925,TWN,Taiwan,residential,11,40
+925,TWN,Taiwan,service,12,30
+925,TWN,Taiwan,track,13,20
+925,TWN,Taiwan,pedestrian,14,27.5
+925,TWN,Taiwan,other,15,40
+2647,MNE,Montenegro,primary,4,55
+2647,MNE,Montenegro,secondary,5,50
+2647,MNE,Montenegro,tertiary,6,40
+2647,MNE,Montenegro,primary link,8,40
+2647,MNE,Montenegro,unclassified,9,30
+2647,MNE,Montenegro,residential,11,30
+2647,MNE,Montenegro,service,12,20
+2647,MNE,Montenegro,track,13,20
+2647,MNE,Montenegro,pedestrian,14,8.0467
+2647,MNE,Montenegro,other,15,30
+2648,SRB,Serbia,motorway,1,130
+2648,SRB,Serbia,trunk,2,80
+2648,SRB,Serbia,primary,4,50
+2648,SRB,Serbia,secondary,5,50
+2648,SRB,Serbia,tertiary,6,50
+2648,SRB,Serbia,motorway link,7,40
+2648,SRB,Serbia,primary link,8,50
+2648,SRB,Serbia,unclassified,9,40
+2648,SRB,Serbia,residential,11,50
+2648,SRB,Serbia,service,12,40
+2648,SRB,Serbia,track,13,30
+2648,SRB,Serbia,pedestrian,14,45
+2648,SRB,Serbia,other,15,40
+33364,HKG,Hong Kong,motorway,1,80
+33364,HKG,Hong Kong,trunk,2,70
+33364,HKG,Hong Kong,primary,4,70
+33364,HKG,Hong Kong,secondary,5,50
+33364,HKG,Hong Kong,tertiary,6,50
+33364,HKG,Hong Kong,motorway link,7,50
+33364,HKG,Hong Kong,primary link,8,50
+33364,HKG,Hong Kong,unclassified,9,50
+33364,HKG,Hong Kong,residential,11,50
+33364,HKG,Hong Kong,service,12,30
+33364,HKG,Hong Kong,other,15,50
+40765,EGY,Egypt,motorway,1,100
+40765,EGY,Egypt,trunk,2,90
+40765,EGY,Egypt,primary,4,60
+40765,EGY,Egypt,secondary,5,60
+40765,EGY,Egypt,tertiary,6,50
+40765,EGY,Egypt,motorway link,7,120
+40765,EGY,Egypt,primary link,8,30
+40765,EGY,Egypt,unclassified,9,50
+40765,EGY,Egypt,road,10,60
+40765,EGY,Egypt,residential,11,30
+40765,EGY,Egypt,service,12,20
+40765,EGY,Egypt,track,13,40
+40765,EGY,Egypt,other,15,30
+1006344,MEX,Mexico,motorway,1,100
+1006344,MEX,Mexico,trunk,2,80
+1006344,MEX,Mexico,primary,4,60
+1006344,MEX,Mexico,secondary,5,50
+1006344,MEX,Mexico,tertiary,6,40
+1006344,MEX,Mexico,motorway link,7,40
+1006344,MEX,Mexico,primary link,8,40
+1006344,MEX,Mexico,unclassified,9,40
+1006344,MEX,Mexico,road,10,40
+1006344,MEX,Mexico,residential,11,30
+1006344,MEX,Mexico,service,12,30
+1006344,MEX,Mexico,track,13,40
+1006344,MEX,Mexico,pedestrian,14,25
+1006344,MEX,Mexico,other,15,40
+1011440,MMR,Myanmar,trunk,2,70
+1011440,MMR,Myanmar,primary,4,50
+1011440,MMR,Myanmar,secondary,5,50
+1011440,MMR,Myanmar,tertiary,6,50
+1011440,MMR,Myanmar,primary link,8,50
+1011440,MMR,Myanmar,unclassified,9,30
+1011440,MMR,Myanmar,road,10,30
+1011440,MMR,Myanmar,residential,11,30
+1011440,MMR,Myanmar,service,12,30
+1011440,MMR,Myanmar,track,13,30
+1011440,MMR,Myanmar,other,15,40
+1011441,PNG,Papua New Guinea,primary,4,70
+1011441,PNG,Papua New Guinea,secondary,5,50
+1011441,PNG,Papua New Guinea,tertiary,6,40
+1011441,PNG,Papua New Guinea,unclassified,9,40
+1011441,PNG,Papua New Guinea,residential,11,25
+1011441,PNG,Papua New Guinea,service,12,5
+1011442,PER,Peru,motorway,1,80
+1011442,PER,Peru,trunk,2,60
+1011442,PER,Peru,primary,4,60
+1011442,PER,Peru,secondary,5,45
+1011442,PER,Peru,tertiary,6,40
+1011442,PER,Peru,motorway link,7,50
+1011442,PER,Peru,primary link,8,40
+1011442,PER,Peru,unclassified,9,40
+1011442,PER,Peru,road,10,30
+1011442,PER,Peru,residential,11,30
+1011442,PER,Peru,service,12,30
+1011442,PER,Peru,track,13,30
+1011442,PER,Peru,pedestrian,14,30
+1011442,PER,Peru,other,15,30
+1011443,KOR,South Korea,motorway,1,100
+1011443,KOR,South Korea,trunk,2,80
+1011443,KOR,South Korea,primary,4,70
+1011443,KOR,South Korea,secondary,5,60
+1011443,KOR,South Korea,tertiary,6,60
+1011443,KOR,South Korea,motorway link,7,70
+1011443,KOR,South Korea,primary link,8,40
+1011443,KOR,South Korea,unclassified,9,30
+1011443,KOR,South Korea,road,10,20
+1011443,KOR,South Korea,residential,11,30
+1011443,KOR,South Korea,service,12,30
+1011443,KOR,South Korea,track,13,30
+1011443,KOR,South Korea,pedestrian,14,20
+1011443,KOR,South Korea,other,15,40
+1011444,SLB,Solomon Islands,unclassified,9,20
+1011444,SLB,Solomon Islands,residential,11,20
+1011446,AFG,Afghanistan,trunk,2,90
+1011446,AFG,Afghanistan,primary,4,80
+1011446,AFG,Afghanistan,secondary,5,60
+1011446,AFG,Afghanistan,tertiary,6,40
+1011446,AFG,Afghanistan,unclassified,9,40
+1011446,AFG,Afghanistan,road,10,20
+1011446,AFG,Afghanistan,residential,11,50
+1011446,AFG,Afghanistan,service,12,20
+1011446,AFG,Afghanistan,track,13,40
+1011446,AFG,Afghanistan,other,15,30
+1011447,VNM,Vietnam,motorway,1,100
+1011447,VNM,Vietnam,trunk,2,60
+1011447,VNM,Vietnam,primary,4,60
+1011447,VNM,Vietnam,secondary,5,40
+1011447,VNM,Vietnam,tertiary,6,40
+1011447,VNM,Vietnam,motorway link,7,60
+1011447,VNM,Vietnam,primary link,8,50
+1011447,VNM,Vietnam,unclassified,9,40
+1011447,VNM,Vietnam,road,10,20
+1011447,VNM,Vietnam,residential,11,40
+1011447,VNM,Vietnam,service,12,20
+1011447,VNM,Vietnam,track,13,25
+1011447,VNM,Vietnam,other,15,35
+1013696,IDN,Indonesia,motorway,1,100
+1013696,IDN,Indonesia,trunk,2,70
+1013696,IDN,Indonesia,primary,4,60
+1013696,IDN,Indonesia,secondary,5,50
+1013696,IDN,Indonesia,tertiary,6,40
+1013696,IDN,Indonesia,motorway link,7,40
+1013696,IDN,Indonesia,primary link,8,72
+1013696,IDN,Indonesia,unclassified,9,40
+1013696,IDN,Indonesia,road,10,20
+1013696,IDN,Indonesia,residential,11,24.1401
+1013696,IDN,Indonesia,service,12,20
+1013696,IDN,Indonesia,track,13,9.65604
+1013696,IDN,Indonesia,other,15,40
+1013965,ZAF,South Africa,motorway,1,120
+1013965,ZAF,South Africa,trunk,2,100
+1013965,ZAF,South Africa,primary,4,70
+1013965,ZAF,South Africa,secondary,5,60
+1013965,ZAF,South Africa,tertiary,6,60
+1013965,ZAF,South Africa,motorway link,7,60
+1013965,ZAF,South Africa,primary link,8,60
+1013965,ZAF,South Africa,unclassified,9,60
+1013965,ZAF,South Africa,road,10,40
+1013965,ZAF,South Africa,residential,11,60
+1013965,ZAF,South Africa,service,12,40
+1013965,ZAF,South Africa,track,13,40
+1013965,ZAF,South Africa,pedestrian,14,60
+1013965,ZAF,South Africa,other,15,60

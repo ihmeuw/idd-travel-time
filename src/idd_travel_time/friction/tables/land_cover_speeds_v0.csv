@@ -1,0 +1,11 @@
+land_cover_subtype,walking_speed_kph,source
+crop,2.5,Weiss 2018: croplands 2.50 (mosaic 3.24 not used)
+forest,3.07,"Weiss 2018: mean of evergreen broadleaf 1.62, evergreen needleleaf 3.24, deciduous needleleaf 3.24, deciduous broadleaf 4.00, mixed 3.24 (V0 rule)"
+grass,4.86,Weiss 2018: grasslands 4.86
+shrub,3.6,Weiss 2018: mean of closed shrublands 3.00 and open shrublands 4.20 (V0 rule)
+wetland,2.0,Weiss 2018: permanent wetlands 2.00
+urban,5.0,"Weiss 2018: urban and built-up 5.00 (assigned, not surveyed)"
+barren,3.0,Weiss 2018: barren or sparsely vegetated 3.00
+snow,1.62,Weiss 2018: snow and ice 1.62
+moss,2.31,"no MODIS class; mean of barren 3.00 and snow/ice 1.62 (V0 rule, Bobby 2026-10-21)"
+mangrove,2.0,"no MODIS class; permanent wetlands 2.00 (V0 rule, Bobby 2026-10-21)"

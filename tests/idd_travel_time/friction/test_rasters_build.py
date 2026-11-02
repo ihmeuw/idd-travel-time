@@ -1,0 +1,188 @@
+"""Rasterisers and composition on a tiny synthetic block."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any
+
+import geopandas as gpd
+import numpy as np
+import pytest
+from shapely import LineString, box
+
+from idd_travel_time.friction import build as bd
+from idd_travel_time.friction import rasters as rs
+from idd_travel_time.friction.frame import FRAME_CRS, BlockGrid
+from idd_travel_time.friction.params import FrictionParams, load_params
+
+# 10 x 10 cells of 40 m at the equator (x from 0, y from 0 to 400)
+GRID = BlockGrid("T", 40.0, 0.0, 0.0, 400.0, 400.0)
+
+
+@pytest.fixture(scope="module")
+def params() -> FrictionParams:
+    return load_params()
+
+
+def _gdf(geoms: list[Any], **cols: list[Any]) -> gpd.GeoDataFrame:
+    return gpd.GeoDataFrame(cols, geometry=geoms, crs=FRAME_CRS)
+
+
+def test_rasterize_fastest_takes_max_and_counts_overlap() -> None:
+    a = box(0, 0, 200, 400)  # left half
+    b = box(100, 0, 400, 400)  # right 3/4, overlaps the middle quarter
+    count = np.zeros(GRID.shape, dtype=np.uint8)
+    out = rs.rasterize_fastest(
+        GRID,
+        [
+            (2.0, gpd.GeoSeries([a], crs=FRAME_CRS)),
+            (5.0, gpd.GeoSeries([b], crs=FRAME_CRS)),
+        ],
+        all_touched=False,
+        count=count,
+    )
+    assert out[5, 1] == 2.0  # only a
+    assert out[5, 3] == 5.0  # overlap -> fastest
+    assert out[5, 8] == 5.0  # only b
+    assert count[5, 3] == 2
+    assert count[5, 1] == 1
+    assert np.isnan(out).sum() == 0
+
+
+def test_land_cover_speed_rejects_unknown_subtype(params: FrictionParams) -> None:
+    lc = _gdf([box(0, 0, 400, 400)], subtype=["lava"])
+    with pytest.raises(ValueError, match="lava"):
+        rs.land_cover_speed(GRID, lc, params)
+
+
+def test_road_speed_uses_country_lookup_and_walking_cap(params: FrictionParams) -> None:
+    roads = {c: _gdf([], id=[]) for c in params.road_crosswalk}
+    roads["motorway"] = _gdf(
+        [LineString([(0, 200), (400, 200)])], id=["m"]
+    )  # across row 4/5
+    roads["track"] = _gdf(
+        [LineString([(200, 0), (200, 400)])], id=["t"]
+    )  # down column 5
+    countries = _gdf([box(0, 0, 400, 400)], country=["UG"], iso3=["UGA"])
+    idx, iso3s = rs.country_raster(GRID, countries)
+    assert iso3s == ["UGA"]
+    assert idx.min() == 1
+    motor = rs.road_speed(GRID, roads, idx, iso3s, params)
+    assert motor[4, 1] == 100.0 or motor[5, 1] == 100.0  # Uganda motorway
+    assert np.nanmax(motor[:, 5]) == 100.0  # crossing cell: fastest wins
+    assert motor[1, 5] == 30.0  # Uganda track
+    walk = rs.road_speed(GRID, roads, idx, iso3s, params, walking_kph=5.0)
+    assert np.nanmax(walk) == 5.0
+    assert np.isfinite(walk).sum() == np.isfinite(motor).sum()
+    # no country polygon -> global default (105 motorway)
+    none_idx = np.zeros(GRID.shape, dtype=np.int32)
+    assert np.nanmax(rs.road_speed(GRID, roads, none_idx, [], params)) == 105.0
+
+
+def test_water_speed_by_mode(params: FrictionParams) -> None:
+    water = {c: _gdf([], id=[]) for c in params.water}
+    water["inland_water"] = _gdf([box(0, 0, 200, 200)], id=["lake"])
+    water["coastal_ocean"] = _gdf([box(200, 200, 400, 400)], id=["sea"])
+    water["stream_water"] = _gdf([LineString([(0, 300), (200, 300)])], id=["s"])
+    motor, mask = rs.water_speed(GRID, water, params, mode="motorised")
+    assert motor[7, 2] == 10.0  # lake (rows count from the top)
+    assert motor[2, 7] == 19.0  # ocean
+    assert np.isnan(motor[2, 2])  # stream ignored
+    assert not mask.any()
+    walk, mask = rs.water_speed(GRID, water, params, mode="walking")
+    assert walk[7, 2] == 1.0
+    assert np.isnan(walk[2, 7])
+    assert mask[2, 7]
+    assert not mask[7, 2]
+
+
+def test_compose_mode_layer_precedence(params: FrictionParams) -> None:
+    data = bd.BlockInputs(
+        land_cover=_gdf([box(0, 0, 400, 400)], subtype=["grass"]),
+        roads={c: _gdf([], id=[]) for c in params.road_crosswalk},
+        water={c: _gdf([], id=[]) for c in params.water},
+        countries=_gdf([box(0, 0, 400, 400)], country=["UG"], iso3=["UGA"]),
+        elevation=np.zeros(GRID.shape, dtype=np.float32),
+    )
+    data.water["inland_water"] = _gdf([box(0, 0, 200, 200)], id=["lake"])
+    data.roads["primary"] = _gdf(
+        [LineString([(0, 100), (400, 100)])], id=["p"]
+    )  # through the lake
+    stats: dict[str, Any] = {}
+    off = bd.offroad_speed(GRID, data, params, stats)
+    assert off[2, 8] == pytest.approx(4.86 * 1.016, abs=1e-3)  # grass, flat, sea level
+    walk = bd.compose_mode(GRID, data, params, off, "walking", stats)
+    assert walk[8, 1] == 1.0  # water replaces grass on the walking surface
+    assert walk[7, 1] == 5.0  # road replaces water (bridge), capped to walking
+    motor = bd.compose_mode(GRID, data, params, off, "motorised", stats)
+    assert motor[8, 1] == 10.0
+    assert motor[7, 1] == 50.0  # Uganda primary
+    assert stats["walking_cells_road"] == stats["motorised_cells_road"] > 0
+    f = bd.speed_kph_to_friction(np.array([60.0, np.nan], dtype=np.float32))
+    assert f[0] == pytest.approx(0.001)
+    assert np.isnan(f[1])
+
+
+def test_compose_mode_rejects_unknown_mode(params: FrictionParams) -> None:
+    data = bd.BlockInputs(
+        _gdf([], subtype=[]),
+        {},
+        {},
+        _gdf([], country=[], iso3=[]),
+        np.zeros(GRID.shape, np.float32),
+    )
+    with pytest.raises(ValueError, match="unknown mode"):
+        bd.compose_mode(
+            GRID, data, params, np.zeros(GRID.shape, np.float32), "flying", {}
+        )
+
+
+def test_write_raster_is_atomic_and_readable(tmp_path: Path) -> None:
+    import rasterio
+
+    arr = np.full(GRID.shape, 0.012, dtype=np.float32)
+    out = tmp_path / "m" / "T.tif"
+    bd.write_raster(out, arr, GRID)
+    assert out.exists()
+    assert not list(out.parent.glob("T.tif.tmp-*"))
+    with rasterio.open(out) as src:
+        assert src.shape == GRID.shape
+        assert src.transform == GRID.transform
+        assert np.allclose(src.read(1), 0.012)
+
+
+def test_clip_to_grid_drops_outside_and_keeps_margin() -> None:
+    far = box(5000, 5000, 6000, 6000)  # entirely outside the 400 m block
+    near = box(-50, -50, 100, 100)  # straddles the edge; margin keeps the overlap
+    g = _gdf([far, near], subtype=["grass", "grass"])
+    c = rs.clip_to_grid(g, GRID)
+    assert len(c) == 1
+    assert c.geometry.iloc[0].bounds[0] >= -rs.CLIP_MARGIN_M
+    assert c.geometry.iloc[0].bounds[2] == 100.0
+
+
+def test_use_system_memory_pool_switches_arrow_allocator() -> None:
+    assert bd.use_system_memory_pool() == "system"
+
+
+def test_write_raster_registers_in_sidecar_and_block_done_sees_it(
+    tmp_path: Path,
+) -> None:
+    from idd_tools.jobmon.atomic_io import AtomicRegistry
+
+    arr = np.ones(GRID.shape, dtype=np.float32)
+    out_dir = tmp_path / "slot"
+    with AtomicRegistry(out_dir, task_id="t1", task_template="friction_block") as reg:
+        bd.write_raster(out_dir / "walking" / "B-1.tif", arr, GRID, registry=reg)
+        bd.write_raster(out_dir / "motorised" / "B-1.tif", arr, GRID, registry=reg)
+        assert not bd.block_done(out_dir, "B-1")  # stats json still missing
+        bd.write_json(
+            out_dir / "stats" / "B-1.json", {"block_key": "B-1"}, registry=reg
+        )
+    assert bd.block_done(out_dir, "B-1")
+    sidecar = json.loads((out_dir / ".atomic" / "t1.json").read_text())
+    registered = json.dumps(sidecar)
+    assert "walking/B-1.tif" in registered
+    assert "stats/B-1.json" in registered
+    assert not list((out_dir / "walking").glob("*.tmp"))
