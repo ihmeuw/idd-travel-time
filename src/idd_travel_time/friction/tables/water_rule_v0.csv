@@ -1,0 +1,8 @@
+water_class,motorised_speed_kph,walking_speed_kph,role,source
+river_water,10.0,1.0,boat,Weiss 2018 navigable rivers 10 km/h; walking-only 1 km/h (Weiss 2020)
+inland_water,10.0,1.0,boat,Weiss 2018 lakes 10 km/h; walking-only 1 km/h
+manmade_freshwater,10.0,1.0,boat,canals/reservoirs treated as lakes (V0 mapping)
+coastal_ocean,19.0,mask,ocean,Weiss 2018 ocean 19 km/h (AIS/VOS); walking-only: masked (Weiss 2020)
+coastal_inlet,10.0,1.0,boat,"bays, straits, lagoons: inland-water speeds, never masked; Overture puts lake bays here (Lake Victoria probe: 920k cells), so ocean masking stays with coastal_ocean only (V0 mapping, 2026-10-21)"
+stream_water,,,ignore,"not in Weiss's water layers (not navigable, below Pekel 30 m); falls through to land cover (V0 mapping)"
+waste_and_sewage,,,ignore,not in Weiss's water layers; falls through to land cover (V0 mapping)

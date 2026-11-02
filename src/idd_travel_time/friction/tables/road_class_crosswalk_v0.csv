@@ -1,0 +1,11 @@
+overture_class,weiss_osm_class,note
+motorway,motorway,one-to-one
+trunk,trunk,one-to-one
+primary,primary,one-to-one
+secondary,secondary,one-to-one
+tertiary,tertiary,one-to-one
+residential,residential,one-to-one
+service,service,one-to-one
+unclassified,unclassified,one-to-one
+track,track,one-to-one
+unknown,road,Bobby 2026-10-21: unknown -> Weiss generic 'road' (30 km/h default)

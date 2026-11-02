@@ -1,0 +1,11 @@
+# Weiss 2018 eq. 1-3 (Nature 553:333). Applied to off-road (land-cover) speed only.
+tobler:
+  base_kph: 6.0        # Tobler's walking speed = 6 * exp(-3.5 * |tan(slope) + 0.05|)
+  coefficient: -3.5
+  offset: 0.05
+  cap_kph: 5.0         # cap, then divide by cap -> factor in (0, 1]
+  symmetric: true      # slope fed as an unsigned magnitude (Weiss: isotropic, always slows)
+elevation:
+  scale: 1.016         # factor = 1.016 * exp(-0.0001072 * elevation_m)
+  rate: -0.0001072
+apply_to: offroad_only
