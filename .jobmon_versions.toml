@@ -1,0 +1,14 @@
+schema_version = 1
+
+# Version tags = sets of comparable runs for resource prediction
+# (idd_tools.jobmon.version_tag). Bump the tag whenever per-block cost shifts:
+# builder code, input release, resolution, or the parameter tables.
+
+[tags.v0_40m]
+description = "V0 friction surface at 40 m: Overture 2025-04-23.0, Copernicus GLO-30, Weiss tables (DECISIONS 2026-10-21)"
+
+[tags.fabdem_v12_mirror]
+description = "FABDEM V1-2 mirror pull: one jobmon task per ten-degree archive, tiles fetched by HTTP byte range from data.bris.ac.uk (DECISIONS 2026-10-23)"
+
+[tags.friction_fabdem_40m]
+description = "Friction surface at 40 m with FABDEM V1-2 as the primary elevation (GLO-30, GLO-90 fallbacks), blocks packed by memory tier and priced per task from the 2026-10-22 audit (plan_friction_v0.md, 2026-10-23)"
