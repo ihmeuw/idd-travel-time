@@ -282,19 +282,45 @@ def resolve_elevation_tiles(
     )
 
 
+MOSAIC_RES_DEG = 1 / 3600  # the 1 arc-second grid FABDEM and GLO-30 share
+
+
 @dataclass(frozen=True)
 class ElevationFill:
-    """How :func:`elevation_with_fallback` filled the block grid."""
+    """How :func:`elevation_with_fallback` filled the block's elevation mosaic."""
 
-    cells_by_source: dict[str, int]  # grid cells whose value came from each source
-    nodata_tiles: list[str]  # file stems whose data had empty cells inside the block
+    pixels_by_source: dict[str, int]  # mosaic pixels whose value came from each source
+    nodata_tiles: list[
+        str
+    ]  # file stems with empty cells inside the tile (edges excluded)
+    seam_pixels_filled: int  # one-pixel gaps between sources closed by interpolation
 
 
-def _merge_files(files: list[Path]) -> tuple[NDArray[np.float32], Any, Any]:
-    """Mosaic of *files* on the first file's grid: (array, transform, crs); NaN where no file covers."""
+def _merge_files(
+    files: list[Path],
+    *,
+    bounds: tuple[float, float, float, float] | None = None,
+    res: float | None = None,
+) -> tuple[NDArray[np.float32], Any, Any]:
+    """Mosaic of *files*: (array, transform, crs); NaN where no file covers.
+
+    With *bounds* and *res* the mosaic sits on that grid and a file at another
+    resolution is resampled bilinearly into it; without them it sits on the
+    first file's grid, as ``rasterio.merge`` does.
+    """
     handles = [rasterio.open(f) for f in files]
     try:
-        mosaic, transform = merge(handles, nodata=np.nan, dtype="float32")
+        resampling = Resampling.nearest
+        if res is not None and any(abs(h.res[0] - res) > res * 1e-6 for h in handles):
+            resampling = Resampling.bilinear
+        mosaic, transform = merge(
+            handles,
+            bounds=bounds,
+            res=None if res is None else (res, res),
+            nodata=np.nan,
+            dtype="float32",
+            resampling=resampling,
+        )
         crs = handles[0].crs
     finally:
         for h in handles:
@@ -324,16 +350,59 @@ def _reproject_to_grid(
 def _tile_has_nodata(
     mosaic: NDArray[np.float32], transform: Any, corner: Corner
 ) -> bool:
-    """True when the one-degree tile at *corner* holds a NaN inside the mosaic."""
+    """True when the one-degree tile at *corner* holds a NaN inside the mosaic.
+
+    The tile's outermost pixel ring is left out: products register their
+    pixels differently (Copernicus centres a pixel on the degree line, so a
+    3 arc-second tile starts one 1 arc-second pixel later than a 1 arc-second
+    one), and that offset is a seam, not missing data.
+    """
     lat, lon = corner
     (r0, c0), (r1, c1) = (
         rowcol(transform, lon, lat + 1),
         rowcol(transform, lon + 1, lat),
     )
     rows, cols = mosaic.shape
-    r0, r1 = max(int(r0), 0), min(int(r1), rows)
-    c0, c1 = max(int(c0), 0), min(int(c1), cols)
+    r0, r1 = max(int(r0) + 1, 0), min(int(r1) - 1, rows)
+    c0, c1 = max(int(c0) + 1, 0), min(int(c1) - 1, cols)
     return bool(np.isnan(mosaic[r0:r1, c0:c1]).any())
+
+
+def _mosaic_bounds(
+    corners: set[Corner], res: float
+) -> tuple[float, float, float, float]:
+    """The one-degree tiles' union on the 1 arc-second registration (a pixel centred on each degree line)."""
+    lats = [lat for lat, _ in corners]
+    lons = [lon for _, lon in corners]
+    return (
+        min(lons) - res / 2,
+        min(lats) + res / 2,
+        max(lons) + 1 - res / 2,
+        max(lats) + 1 + res / 2,
+    )
+
+
+def close_seams(mosaic: NDArray[np.float32]) -> int:
+    """Fill each NaN pixel that has finite pixels on both sides, across rows or columns, with their mean.
+
+    Two products that register their pixels differently leave a strip one
+    pixel wide at the tile line between them that neither covers (FABDEM's
+    top pixel is centred on the degree line, GLO-90's bottom pixel sits 1.5
+    arc-seconds above it). Bilinear resampling does not bridge a NaN, so the
+    strip is interpolated here from the two sides, which is what the
+    resampling would have done had the pixel existed. A gap wider than one
+    pixel, or one with data on one side only, is left as it is. Returns the
+    number of pixels filled.
+    """
+    filled = 0
+    for view in (mosaic, mosaic.T):
+        before, middle, after = view[:-2], view[1:-1], view[2:]
+        sel = np.isnan(middle) & np.isfinite(before) & np.isfinite(after)
+        if sel.any():
+            middle[sel] = (before[sel] + after[sel]) / 2
+            filled += int(sel.sum())
+        del sel
+    return filled
 
 
 def elevation_on_grid(grid: BlockGrid, files: list[Path]) -> NDArray[np.float32]:
@@ -344,21 +413,31 @@ def elevation_on_grid(grid: BlockGrid, files: list[Path]) -> NDArray[np.float32]
 
 
 def elevation_with_fallback(
-    grid: BlockGrid, tiles: ElevationTiles
+    grid: BlockGrid, tiles: ElevationTiles, *, res: float = MOSAIC_RES_DEG
 ) -> tuple[NDArray[np.float32], ElevationFill]:
     """Elevation on the block grid, each cell from the first source that has a value for it.
 
-    One pass per source in ``ELEVATION_SOURCE_ORDER``: the source's files for
-    the tiles still pending are merged on their own grid (so a 3 arc-second
-    GLO-90 tile never coarsens a 1 arc-second neighbour) and resampled onto the
-    block grid, and the cells still NaN take its values. A tile leaves the
-    pending set once a source covered it without an empty cell; a tile whose
-    file has empty cells (FABDEM N29W086 is nodata on 80 percent of its
-    cells) stays pending for the next source. A cell no source has stays NaN.
+    One mosaic on the 1 arc-second grid over the block's tiles, one pass per
+    source in ``ELEVATION_SOURCE_ORDER``: the source's files for the tiles
+    still pending are merged onto that grid (a 3 arc-second GLO-90 tile is
+    resampled up, never a 1 arc-second neighbour down) and the pixels still
+    NaN take its values. A tile leaves the pending set once a source covered
+    it without an empty cell inside; a tile whose file has empty cells
+    (FABDEM N29W086 is nodata on 80 percent of its cells) stays pending for
+    the next source. When more than one source contributed, the one-pixel
+    seams between them are closed (:func:`close_seams`). The mosaic is then
+    resampled once onto the block grid. A pixel no source has stays NaN.
     """
-    out = np.full(grid.shape, np.nan, dtype=np.float32)
-    pending: set[Corner] = {c for files in tiles.by_source.values() for c in files}
-    cells_by_source: dict[str, int] = {}
+    corners: set[Corner] = {c for files in tiles.by_source.values() for c in files}
+    if not corners:
+        return np.full(grid.shape, np.nan, dtype=np.float32), ElevationFill(
+            pixels_by_source={}, nodata_tiles=[], seam_pixels_filled=0
+        )
+    bounds = _mosaic_bounds(corners, res)
+    pending = set(corners)
+    out: NDArray[np.float32] | None = None
+    transform = crs = None
+    pixels_by_source: dict[str, int] = {}
     nodata_tiles: list[str] = []
     for source in ELEVATION_SOURCE_ORDER:
         have = {
@@ -366,18 +445,27 @@ def elevation_with_fallback(
         }
         if not have:
             continue
-        mosaic, transform, crs = _merge_files(list(have.values()))
-        layer = _reproject_to_grid(mosaic, transform, crs, grid)
-        take = np.isnan(out) & np.isfinite(layer)
-        out[take] = layer[take]
-        cells_by_source[source] = int(take.sum())
-        del layer, take
+        layer, transform, crs = _merge_files(
+            list(have.values()), bounds=bounds, res=res
+        )
+        if out is None:
+            out = layer
+            pixels_by_source[source] = int(np.isfinite(out).sum())
+        else:
+            take = np.isnan(out) & np.isfinite(layer)
+            out[take] = layer[take]
+            pixels_by_source[source] = int(take.sum())
+            del take
         for corner, path in have.items():
-            if _tile_has_nodata(mosaic, transform, corner):
+            if _tile_has_nodata(layer, transform, corner):
                 nodata_tiles.append(path.stem)
             else:
                 pending.discard(corner)
-        del mosaic
-    return out, ElevationFill(
-        cells_by_source=cells_by_source, nodata_tiles=nodata_tiles
+        del layer
+    assert out is not None  # noqa: S101  # corners is non-empty, so a source had a file
+    seams = close_seams(out) if len(pixels_by_source) > 1 else 0
+    return _reproject_to_grid(out, transform, crs, grid), ElevationFill(
+        pixels_by_source=pixels_by_source,
+        nodata_tiles=nodata_tiles,
+        seam_pixels_filled=seams,
     )
