@@ -92,27 +92,35 @@ def test_elevation_with_fallback_fills_empty_cells_from_the_next_source(
     # 50 m everywhere.
     fab_data = np.full((n, n), 100.0, dtype=np.float32)
     fab_data[178:182, 165:195] = -9999.0
-    fab = _lonlat_tile(tmp_path / "N00E032_FABDEM_V1-2.tif", fab_data, nodata=-9999.0)
+    # both on the Copernicus registration: a pixel centred on each degree line
+    reg = {"lon": 32.0 - 0.5 / n, "lat_top": 1.0 + 0.5 / n}
+    fab = _lonlat_tile(
+        tmp_path / "N00E032_FABDEM_V1-2.tif", fab_data, nodata=-9999.0, **reg
+    )
     glo = _lonlat_tile(
         tmp_path / "Copernicus_DSM_COG_10_N00_00_E032_00_DEM.tif",
         np.full((n, n), 50.0, dtype=np.float32),
+        **reg,
     )
     grid = _grid_near(32.5, 0.5)
+    res = 1 / n  # the mosaic on the test tiles' own grid, so nothing is resampled
+    hole = 4 * 30  # mosaic pixels in the band
     tiles = io_.ElevationTiles(
         files=[fab],
         sources={"fabdem": 1, "glo30": 0, "glo90": 0},
         missing=[],
         by_source={"fabdem": {(0, 32): fab}, "glo30": {(0, 32): glo}, "glo90": {}},
     )
-    z, fill = io_.elevation_with_fallback(grid, tiles)
+    z, fill = io_.elevation_with_fallback(grid, tiles, res=res)
     assert z.shape == grid.shape
     assert not np.isnan(z).any()  # every hole cell took the next source
-    values = set(np.unique(z.round(3)).tolist())
-    assert values == {50.0, 100.0}
-    n_hole = int((z == 50.0).sum())
-    assert n_hole > 0
-    assert fill.cells_by_source == {"fabdem": z.size - n_hole, "glo30": n_hole}
+    # resampling the 100-to-50 step onto the finer grid blends the hole's edge
+    assert float(z.min()) == 50.0
+    assert float(z.max()) == 100.0
+    assert int((z == 50.0).sum()) > 0
+    assert fill.pixels_by_source == {"fabdem": n * n - hole, "glo30": hole}
     assert fill.nodata_tiles == [fab.stem]
+    assert fill.seam_pixels_filled == 0  # same grid, same registration: no seam
     # the same tile with no second source: the hole stays NaN and is reported
     alone = io_.ElevationTiles(
         files=[fab],
@@ -120,9 +128,12 @@ def test_elevation_with_fallback_fills_empty_cells_from_the_next_source(
         missing=[],
         by_source={"fabdem": {(0, 32): fab}, "glo30": {}, "glo90": {}},
     )
-    z_alone, fill_alone = io_.elevation_with_fallback(grid, alone)
-    assert int(np.isnan(z_alone).sum()) == n_hole
-    assert fill_alone.cells_by_source == {"fabdem": z.size - n_hole}
+    z_alone, fill_alone = io_.elevation_with_fallback(grid, alone, res=res)
+    # NaN where most of a cell's kernel weight fell in the hole: at least the
+    # cells that are purely hole, at most the cells the hole's edge blends into
+    n_alone = int(np.isnan(z_alone).sum())
+    assert int((z == 50.0).sum()) <= n_alone <= int((z < 100.0).sum())
+    assert fill_alone.pixels_by_source == {"fabdem": n * n - hole}
     assert fill_alone.nodata_tiles == [fab.stem]
     # a clean first source leaves nothing pending: the second source is never read
     clean = io_.ElevationTiles(
@@ -135,15 +146,74 @@ def test_elevation_with_fallback_fills_empty_cells_from_the_next_source(
             "glo90": {(0, 32): tmp_path / "absent.tif"},
         },
     )
-    z_clean, fill_clean = io_.elevation_with_fallback(grid, clean)
+    z_clean, fill_clean = io_.elevation_with_fallback(grid, clean, res=res)
     assert float(z_clean.min()) == float(z_clean.max()) == 50.0
-    assert fill_clean.cells_by_source == {"glo30": z.size}
+    assert fill_clean.pixels_by_source == {"glo30": n * n}
     assert fill_clean.nodata_tiles == []
     # nothing at all: all NaN, nothing taken
     nothing = io_.ElevationTiles(files=[], sources={}, missing=["x"], by_source={})
-    z_none, fill_none = io_.elevation_with_fallback(grid, nothing)
+    z_none, fill_none = io_.elevation_with_fallback(grid, nothing, res=res)
     assert np.isnan(z_none).all()
-    assert fill_none == io_.ElevationFill(cells_by_source={}, nodata_tiles=[])
+    assert fill_none == io_.ElevationFill(
+        pixels_by_source={}, nodata_tiles=[], seam_pixels_filled=0
+    )
+
+
+def test_elevation_with_fallback_closes_the_seam_between_registrations(
+    tmp_path: Path,
+) -> None:
+    # A 1 arc-second-style south tile (pixel centred on the degree line, as
+    # FABDEM and GLO-30) under a 3x coarser north tile registered 1.5 pixels
+    # in (as GLO-90): neither covers the one-pixel strip at the tile line.
+    n = 360
+    res = 1 / n
+    south = _lonlat_tile(
+        tmp_path / "N00E032_FABDEM_V1-2.tif",
+        np.full((n, n), 100.0, dtype=np.float32),
+        lon=32.0 - res / 2,
+        lat_top=1.0 + res / 2,
+    )
+    north = tmp_path / "Copernicus_DSM_COG_30_N01_00_E032_00_DEM.tif"
+    with rasterio.open(
+        north,
+        "w",
+        driver="GTiff",
+        height=n // 3,
+        width=n // 3,
+        count=1,
+        dtype="float32",
+        crs="EPSG:4326",
+        transform=Affine(3 * res, 0, 32.0 - 1.5 * res, 0, -3 * res, 2.0 + 1.5 * res),
+    ) as dst:
+        dst.write(np.full((n // 3, n // 3), 40.0, dtype=np.float32), 1)
+    grid = _grid_near(32.5, 1.0)  # straddles the tile line
+    tiles = io_.ElevationTiles(
+        files=[south, north],
+        sources={"fabdem": 1, "glo30": 0, "glo90": 1},
+        missing=[],
+        by_source={"fabdem": {(0, 32): south}, "glo30": {}, "glo90": {(1, 32): north}},
+    )
+    z, fill = io_.elevation_with_fallback(grid, tiles, res=res)
+    assert not np.isnan(z).any()
+    assert float(z.min()) == 40.0
+    assert float(z.max()) == 100.0
+    assert fill.pixels_by_source["fabdem"] == n * n
+    assert fill.pixels_by_source["glo90"] > 0
+    assert (
+        fill.nodata_tiles == []
+    )  # the registration offset is a seam, not missing data
+    # one strip, one pixel high; the coarser tile starts one pixel west of the
+    # union and so ends one pixel short of its east edge, where nothing is above
+    assert fill.seam_pixels_filled == n - 1
+    # the strip is the mean of its two sides, not a copy of either
+    assert ((z > 40.0) & (z < 100.0)).any()
+    # without the seam step the strip stays open: close_seams is what fills it
+    m = np.full((5, 4), 1.0, dtype=np.float32)
+    m[2, :] = np.nan  # a one-pixel strip with data on both sides
+    m[0, 0] = np.nan  # a corner pixel: no pixel above or to its left
+    assert io_.close_seams(m) == 4
+    assert np.isnan(m[0, 0])
+    assert np.isfinite(m[2]).all()
 
 
 def test_elevation_on_grid_resamples_a_lonlat_tile(tmp_path: Path) -> None:

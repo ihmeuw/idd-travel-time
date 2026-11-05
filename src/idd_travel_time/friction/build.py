@@ -79,8 +79,9 @@ class BlockInputs:
     elevation: NDArray[np.float32]
     elevation_missing_tiles: list[str] = field(default_factory=list)
     elevation_sources: dict[str, int] = field(default_factory=dict)
-    elevation_cells_by_source: dict[str, int] = field(default_factory=dict)
+    elevation_pixels_by_source: dict[str, int] = field(default_factory=dict)
     elevation_nodata_tiles: list[str] = field(default_factory=list)
+    elevation_seam_pixels_filled: int = 0
     input_volume: dict[str, Any] = field(
         default_factory=dict
     )  # rows and MB scanned per layer
@@ -161,8 +162,9 @@ def read_block_inputs(grid: BlockGrid, paths: io_.InputPaths) -> BlockInputs:
         elevation=elevation,
         elevation_missing_tiles=tiles.missing,
         elevation_sources=tiles.sources,
-        elevation_cells_by_source=fill.cells_by_source,
+        elevation_pixels_by_source=fill.pixels_by_source,
         elevation_nodata_tiles=fill.nodata_tiles,
+        elevation_seam_pixels_filled=fill.seam_pixels_filled,
         input_volume={
             "land_cover": layer_volume(land_cover),
             "roads": layer_volume(roads),
@@ -196,8 +198,9 @@ def offroad_speed(
     stats["cells_elevation_missing"] = int(np.isnan(data.elevation).sum())
     stats["elevation_missing_tiles"] = data.elevation_missing_tiles
     stats["elevation_source_tiles"] = dict(data.elevation_sources)
-    stats["elevation_cells_by_source"] = dict(data.elevation_cells_by_source)
+    stats["elevation_pixels_by_source"] = dict(data.elevation_pixels_by_source)
     stats["elevation_nodata_tiles"] = list(data.elevation_nodata_tiles)
+    stats["elevation_seam_pixels_filled"] = int(data.elevation_seam_pixels_filled)
     return np.asarray(lc * factor, dtype=np.float32), has_land_cover
 
 
