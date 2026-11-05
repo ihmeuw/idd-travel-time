@@ -406,6 +406,21 @@ def test_report_peaks_takes_the_max_per_task_over_attempts(tmp_path: Path) -> No
 def test_registered_blocks_come_from_the_sidecars(tmp_path: Path) -> None:
     slot, m, _ev = _write_slot(tmp_path)
     reg = ln.registered_blocks(slot)
+    # a frozen (read-only) slot is read from the parquet the consolidation left
+    slot.chmod(0o555)  # read-only, as a frozen snapshot is
+    try:
+        assert ln.registered_blocks(slot) == reg
+    finally:
+        slot.chmod(0o755)
+    frozen = tmp_path / "frozen"
+    frozen.mkdir()
+    (frozen / ".atomic").mkdir()
+    frozen.chmod(0o555)
+    try:
+        with pytest.raises(PermissionError, match="read-only"):
+            ln.registered_blocks(frozen)
+    finally:
+        frozen.chmod(0o755)
     assert reg[m.tasks[0].task_id] == sorted(ln.block_keys_of(m.tasks[0]))
     assert reg[m.tasks[1].task_id] == sorted(ln.block_keys_of(m.tasks[1]))
     assert ln.registered_blocks(tmp_path / "none") == {}

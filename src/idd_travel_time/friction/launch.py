@@ -14,6 +14,7 @@ blocks, and a probed slot's own measures calibrate the task-level asks.
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 from collections import Counter
@@ -514,6 +515,27 @@ def report_peaks(log_dir: Path) -> pd.Series:
     return pd.Series(peaks, dtype=float, name="report_peak_gib")
 
 
+def atomic_registry(slot: Path) -> pd.DataFrame:
+    """The slot's consolidated atomic registry (one row per registered file), without writing to a snapshot.
+
+    ``consolidate_atomic_registry`` folds the ``.atomic`` sidecars into
+    ``.atomic_registry.parquet`` and writes it; a frozen snapshot is read-only,
+    so there the parquet the audit left before the freeze is read as is. Empty
+    when the slot has no sidecars.
+    """
+    if not (slot / ".atomic").is_dir():
+        return pd.DataFrame(
+            columns=["task_id", "task_template", "path", "folder", "registered_at"]
+        )
+    parquet = slot / ".atomic_registry.parquet"
+    if os.access(slot, os.W_OK):
+        return pd.read_parquet(consolidate_atomic_registry(slot))
+    if parquet.exists():
+        return pd.read_parquet(parquet)
+    msg = f"{slot} is read-only and holds no consolidated registry; consolidate it before freezing"
+    raise PermissionError(msg)
+
+
 def registered_blocks(slot: Path) -> dict[str, list[str]]:
     """Per task: the block keys whose stats file it registered in its ``.atomic`` sidecar.
 
@@ -521,9 +543,7 @@ def registered_blocks(slot: Path) -> dict[str, list[str]]:
     attempt (always-append), so it survives the slot's manifest being
     re-packed by a later launch; the manifest only says what was planned.
     """
-    if not (slot / ".atomic").is_dir():
-        return {}
-    registry = pd.read_parquet(consolidate_atomic_registry(slot))
+    registry = atomic_registry(slot)
     out: dict[str, list[str]] = {}
     for tid, path in zip(registry["task_id"], registry["path"], strict=True):
         p = Path(str(path))
@@ -652,9 +672,7 @@ def registered_outputs(out_dir: Path) -> pd.Series:
     (one row per registered file); this counts rows per ``task_id``. Empty when
     no task has registered anything yet.
     """
-    if not (out_dir / ".atomic").is_dir():
-        return pd.Series(dtype=int, name="n_files")
-    registry = pd.read_parquet(consolidate_atomic_registry(out_dir))
+    registry = atomic_registry(out_dir)
     if registry.empty:
         return pd.Series(dtype=int, name="n_files")
     return registry.groupby("task_id")["path"].count().rename("n_files")
