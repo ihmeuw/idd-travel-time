@@ -36,6 +36,7 @@ import json
 import subprocess
 import time
 from pathlib import Path
+from typing import Any
 
 import click
 from idd_tools.jobmon.atomic_io import AtomicRegistry
@@ -55,8 +56,10 @@ from idd_travel_time.friction.build import (
     build_block,
     write_manifest,
 )
+from idd_travel_time.friction.frame import load_tile_index
 from idd_travel_time.friction.inputs import load_input_paths
 from idd_travel_time.friction.params import load_params
+from idd_travel_time.friction.volume import volumes_for
 from idd_travel_time.paths import load_paths
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -210,6 +213,23 @@ def block(
     help="A completed run (audit.csv + stats/) to size from. Default: the node's current snapshot.",
 )
 @click.option(
+    "--refit-from",
+    type=click.Path(path_type=Path, file_okay=False, exists=True),
+    required=True,
+    help=(
+        "A probed slot (audit.csv, task_manifest.json, stats/, logs/, block_peaks.csv): its "
+        "measured block peaks fit the block memory model, and its per-task compute times and "
+        "REPORT peaks calibrate the asks; --evidence-dir supplies the per-block content features."
+    ),
+)
+@click.option(
+    "--refit-workflow",
+    "refit_workflows",
+    type=int,
+    multiple=True,
+    help="Calibrate the asks on these workflow ids of the probed slot only (repeatable). Default: all its audits.",
+)
+@click.option(
     "--target-min",
     type=float,
     default=ln.TARGET_MIN,
@@ -221,7 +241,14 @@ def block(
     type=int,
     default=2,
     show_default=True,
-    help="Submit only this many tasks as a probe (use with --scratch LABEL).",
+    help="Probe: this many tasks from every memory tier (stratified on mem_tier), with --scratch LABEL.",
+)
+@click.option(
+    "--probe-seed",
+    type=int,
+    default=ln.PROBE_SEED,
+    show_default=True,
+    help="Seed for sampling the probe tasks within each tier.",
 )
 @click.option(
     "--no-probe",
@@ -240,8 +267,11 @@ def launch(  # noqa: PLR0913
     resolution: float,
     blocks_file: Path | None,
     evidence_dir: Path | None,
+    refit_from: Path,
+    refit_workflows: tuple[int, ...],
     target_min: float,
     probe_n: int,
+    probe_seed: int,
     no_probe: bool,
     concurrency: int,
     project: str,
@@ -281,8 +311,16 @@ def launch(  # noqa: PLR0913
     keys = [k.strip() for k in blocks_file.read_text().splitlines() if k.strip()]
 
     evidence_dir = evidence_dir or (node / "current").resolve()
-    evidence = ln.block_evidence(evidence_dir)
-    frame = ln.training_frame(evidence_dir)
+    evidence = _evidence(evidence_dir, refit_from, inputs, resolution)
+    frame = ln.slot_training_frame(
+        refit_from, evidence, workflows=refit_workflows or None
+    )
+    sized_from = (
+        f"block models on {len(evidence)} blocks of {evidence_dir} with "
+        f"{len(ln.block_peaks(refit_from))} measured peaks; asks calibrated on "
+        f"{len(frame)} probed tasks of {refit_from}"
+        + (f" (workflows {list(refit_workflows)})" if refit_workflows else "")
+    )
     runtime, memory = ln.fit_predictors(frame)
     manifest = ln.pack_blocks(
         keys,
@@ -290,13 +328,16 @@ def launch(  # noqa: PLR0913
         workflow_name=f"friction_{node.name}_{target.name}",
         target_min=target_min,
     )
-    manifest_path = target / ln.MANIFEST_NAME
+    # A stamped file per launch: a running workflow's workers read the path they
+    # were given, so a later launch into the same slot must not overwrite it.
+    manifest_path = target / f"task_manifest_{time.strftime('%Y%m%dT%H%M%S')}.json"
     manifest.save(manifest_path)
+    manifest.save(target / ln.MANIFEST_NAME)  # the latest packing, for a reader
     asks = ln.predicted_asks(manifest, runtime, memory)
     tiers = evidence.reindex(keys)["mem_tier"].fillna("mid").value_counts().to_dict()
     click.echo(
         f"{len(manifest.tasks)} tasks over {len(keys)} blocks (tiers {tiers}; target {target_min:g} min/task); "
-        f"sized from {evidence_dir} ({len(frame)} audited tasks): "
+        f"sized from {sized_from}: "
         f"runtime min {asks['runtime_min'].min():.0f} / median {asks['runtime_min'].median():.0f} / "
         f"max {asks['runtime_min'].max():.0f} min, sum {asks['runtime_min'].sum() / 60:,.1f} task-hours; "
         f"memory min {asks['memory_gib'].min():.1f} / median {asks['memory_gib'].median():.1f} / "
@@ -316,17 +357,37 @@ def launch(  # noqa: PLR0913
     if violations:
         msg = f"resource ceilings exceeded: {violations}"
         raise click.ClickException(msg)
+    submitted = (
+        manifest
+        if no_probe
+        else ln.stratified_probe(manifest, probe_n, seed=probe_seed)
+    )
+    if not no_probe:
+        probe_asks = asks[asks["task_id"].isin([t.task_id for t in submitted.tasks])]
+        click.echo(
+            f"probe: {len(submitted.tasks)} tasks, {probe_n} per memory tier "
+            f"{ln.tasks_per_tier(submitted)} (seed {probe_seed}); asks "
+            f"{probe_asks['runtime_min'].min():.0f}-{probe_asks['runtime_min'].max():.0f} min, "
+            f"{probe_asks['memory_gib'].min():.1f}-{probe_asks['memory_gib'].max():.1f} GiB"
+        )
+        for row in probe_asks.itertuples(index=False):
+            click.echo(
+                f"  {row.task_id}: {row.n_blocks} blocks, {row.runtime_min:.0f} min, {row.memory_gib:.1f} GiB"
+            )
     if dry_run:
         click.echo("dry run: nothing submitted")
         return
 
-    submit = ln.reference_manifest(manifest, manifest_path, target)
+    submit = ln.reference_manifest(submitted, manifest_path, target)
     result = submit_with_manifest(
         submit,
         output_dir=target,
         templates={ln.TEMPLATE: ln.template_spec()},
         resources=ln.resources_callable(manifest, runtime, memory, cores=cores),
-        probe_only=None if no_probe else probe_n,
+        # The probe is the stratified subset built above (one sample per memory
+        # tier), not idd-tools' flat first-N slice, which would take the
+        # lightest tier only given pack_blocks' ordering.
+        probe_only=None,
         concurrency_limit=concurrency,
         log_path_fn=lambda task: ln.log_paths(task, target),
         project=project,
@@ -338,7 +399,10 @@ def launch(  # noqa: PLR0913
         target,
         version_tag,
         result.workflow_id,
-        note=f"probe_n={None if no_probe else probe_n}; slot={target.name}; evidence={evidence_dir}",
+        note=(
+            f"probe={'none' if no_probe else f'{probe_n} per tier, seed {probe_seed}'}; "
+            f"slot={target.name}; evidence={evidence_dir}; refit={refit_from}"
+        ),
         registry_path=REPO_ROOT / ".jobmon_versions.toml",
     )
     click.echo(
@@ -349,6 +413,20 @@ def launch(  # noqa: PLR0913
         msg = f"workflow {result.workflow_id} ended with status {result.status}; nothing frozen"
         raise click.ClickException(msg)
     finish_if_requested(node, versions)
+
+
+def _evidence(
+    evidence_dir: Path, slot: Path, inputs: Any, resolution: float
+) -> Any:  # pandas frame
+    """Block evidence: content stats of *evidence_dir*, latitudes from the frame, peaks measured in *slot*."""
+    tile_index = load_tile_index(inputs.tile_index_root, int(resolution))
+    keys = ln.block_stats(evidence_dir).index.tolist()
+    return ln.block_evidence(
+        evidence_dir,
+        latitudes=ln.abs_latitudes(keys, tile_index, resolution),
+        peaks=ln.block_peaks(slot),
+        volumes=volumes_for(keys, inputs, tile_index, resolution),
+    )
 
 
 @main.command("audit")
@@ -362,7 +440,19 @@ def launch(  # noqa: PLR0913
     default=None,
     help="Register every completed task as a probe measurement under this tag.",
 )
-def audit(out_dir: Path, register_tag: str | None) -> None:
+@click.option(
+    "--evidence-dir",
+    type=click.Path(path_type=Path, file_okay=False, exists=True),
+    default=None,
+    help="The run whose block stats supply the content features. Default: the node's current snapshot.",
+)
+@click.option("--resolution", type=float, default=40.0, show_default=True)
+def audit(
+    out_dir: Path,
+    register_tag: str | None,
+    evidence_dir: Path | None,
+    resolution: float,
+) -> None:
     """Join the slot's last run record to sacct: zones, sizing floor, REPORT asks, probe registration."""
     from idd_tools.jobmon.resource_audit import (
         audit_run,
@@ -383,7 +473,45 @@ def audit(out_dir: Path, register_tag: str | None) -> None:
         )
     out = out_dir / "audit.csv"
     frame.to_csv(out, index=False)
+    wf = (
+        frame["workflow_id"].dropna().unique().tolist()
+        if "workflow_id" in frame
+        else []
+    )
+    if len(wf) == 1:
+        frame.to_csv(
+            out_dir / f"audit_{int(wf[0])}.csv", index=False
+        )  # kept per workflow
     click.echo(f"full audit -> {out}")
+    evidence_dir = evidence_dir or (friction_node() / "current").resolve()
+    evidence = _evidence(
+        evidence_dir, out_dir, load_input_paths(load_paths()), resolution
+    )
+    training = ln.slot_training_frame(out_dir, evidence)
+    if len(training) and ln.PROBE_BY in training:
+        click.echo(
+            "cost by memory tier:\n"
+            + ln.tier_cost_curve(training).to_string(index=False)
+        )
+    if len(training) >= ln.MIN_TRAINING_TASKS:
+        refit_runtime, refit_memory = ln.fit_predictors(training)
+        click.echo(
+            "refit on this slot's measures (features recomputed from block content; elapsed = block "
+            "compute + overhead, max_rss = REPORT peak; asked = the ask it ran under; refit = what a "
+            "fit on this slot would ask):\n"
+            + ln.refit_table(training, refit_runtime, refit_memory)
+            .round(1)
+            .to_string(index=False)
+        )
+    else:
+        click.echo(
+            f"refit skipped: {len(training)} completed tasks, need {ln.MIN_TRAINING_TASKS}"
+        )
+    registered = ln.registered_outputs(out_dir)
+    click.echo(
+        f"registered outputs per task (.atomic sidecars, {int(registered.sum())} files): "
+        f"{registered.to_dict()}"
+    )
     if register_tag:
         from idd_tools.jobmon.run_registry import register_probe
 
@@ -395,12 +523,15 @@ def audit(out_dir: Path, register_tag: str | None) -> None:
                 if row.task_features_json
                 else {}
             )
+            tier = feats.get(ln.PROBE_BY)
             register_probe(
                 out_dir,
                 register_tag,
                 int(row.workflow_id),
                 n_cells=int(feats.get("n_blocks", 1)),
-                shared_axes=[],
+                # the tier travels with the measurement so the history can be fitted per tier
+                shared_axes=[ln.PROBE_BY] if tier is not None else [],
+                axis_values={ln.PROBE_BY: str(tier)} if tier is not None else None,
                 elapsed_s=float(row.elapsed_seconds),
                 max_rss_gib=float(row.max_rss_gib),
                 note=str(row.task_id),

@@ -12,9 +12,11 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import resource
 import subprocess
 import time
 import warnings
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -41,6 +43,8 @@ from idd_travel_time.friction.slope import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator, Mapping
+
     import geopandas as gpd
     from numpy.typing import NDArray
 
@@ -75,6 +79,12 @@ class BlockInputs:
     elevation: NDArray[np.float32]
     elevation_missing_tiles: list[str] = field(default_factory=list)
     elevation_sources: dict[str, int] = field(default_factory=dict)
+    input_volume: dict[str, Any] = field(
+        default_factory=dict
+    )  # rows and MB scanned per layer
+    seconds_step: dict[str, float] = field(
+        default_factory=dict
+    )  # wall seconds per read step
 
 
 @dataclass
@@ -93,18 +103,70 @@ def speed_kph_to_friction(speed: NDArray[np.float32]) -> NDArray[np.float32]:
         return np.asarray(MINUTES_PER_HOUR / (speed * 1000.0), dtype=np.float32)
 
 
+@contextmanager
+def timed(steps: dict[str, float], label: str) -> Iterator[None]:
+    """Add the wall seconds of the body to ``steps[label]``: per-step evidence for sizing."""
+    t0 = time.perf_counter()
+    try:
+        yield
+    finally:
+        steps[label] = round(steps.get(label, 0.0) + time.perf_counter() - t0, 2)
+
+
+def layer_volume(
+    layer: gpd.GeoDataFrame | Mapping[str, gpd.GeoDataFrame],
+) -> dict[str, Any]:
+    """Rows and MB scanned for one layer, or per class plus the total for a dict of classes.
+
+    The reader records what it scanned in ``GeoDataFrame.attrs["input_volume"]``.
+    """
+    if hasattr(layer, "attrs"):
+        vol = layer.attrs.get("input_volume") or {"rows": 0, "mb": 0.0}
+        return {"rows": int(vol["rows"]), "mb": float(vol["mb"])}
+    per_class = {cls: layer_volume(g) for cls, g in layer.items()}
+    return {
+        "rows": sum(v["rows"] for v in per_class.values()),
+        "mb": round(sum(v["mb"] for v in per_class.values()), 3),
+        "classes": per_class,
+    }
+
+
+def process_peak_gib() -> float:
+    """Peak resident set of this process so far (``ru_maxrss``, KiB on Linux), in GiB."""
+    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 2**20
+
+
 def read_block_inputs(grid: BlockGrid, paths: io_.InputPaths) -> BlockInputs:
-    """Read every input for *grid*, scoped to its padded lon/lat bounds."""
+    """Read every input for *grid*, scoped to its padded lon/lat bounds, timing each step."""
     bounds = grid.lonlat_bounds(pad_deg=LONLAT_PAD_DEG)
-    tiles = io_.resolve_elevation_tiles(paths, bounds)
+    steps: dict[str, float] = {}
+    with timed(steps, "read_elevation"):
+        tiles = io_.resolve_elevation_tiles(paths, bounds)
+        elevation = io_.elevation_on_grid(grid, tiles.files)
+    with timed(steps, "read_land_cover"):
+        land_cover = io_.read_land_cover(paths, bounds)
+    with timed(steps, "read_roads"):
+        roads = io_.read_roads(paths, bounds)
+    with timed(steps, "read_water"):
+        water = io_.read_water(paths, bounds)
+    with timed(steps, "read_countries"):
+        countries = io_.read_countries(paths, bounds)
     return BlockInputs(
-        land_cover=io_.read_land_cover(paths, bounds),
-        roads=io_.read_roads(paths, bounds),
-        water=io_.read_water(paths, bounds),
-        countries=io_.read_countries(paths, bounds),
-        elevation=io_.elevation_on_grid(grid, tiles.files),
+        land_cover=land_cover,
+        roads=roads,
+        water=water,
+        countries=countries,
+        elevation=elevation,
         elevation_missing_tiles=tiles.missing,
         elevation_sources=tiles.sources,
+        input_volume={
+            "land_cover": layer_volume(land_cover),
+            "roads": layer_volume(roads),
+            "water": layer_volume(water),
+            "countries": layer_volume(countries),
+            "elevation_tiles": len(tiles.files),
+        },
+        seconds_step=steps,
     )
 
 
@@ -277,21 +339,32 @@ def build_block(
     tile_index = load_tile_index(paths.tile_index_root, int(resolution_m))
     grid = block_grid(tile_index, block_key, resolution_m)
     data = read_block_inputs(grid, paths)
+    _lon0, lat0, _lon1, lat1 = grid.lonlat_bounds()
     stats: dict[str, Any] = {
         "block_key": block_key,
         "cells": int(np.prod(grid.shape)),
         "clipped_edge_block": grid.clipped,
+        "abs_lat": round(abs((lat0 + lat1) / 2.0), 3),
         "seconds_read": round(time.time() - t0, 1),
+        "input_volume": data.input_volume,
     }
-    offroad = offroad_speed(grid, data, params, stats)
+    steps = dict(data.seconds_step)
+    with timed(steps, "offroad"):
+        offroad = offroad_speed(grid, data, params, stats)
     outputs: dict[str, Path] = {}
     for mode in modes:
-        speed = compose_mode(grid, data, params, offroad, mode, stats)
+        with timed(steps, f"{mode}_compose"):
+            speed = compose_mode(grid, data, params, offroad, mode, stats)
         out = outputs_all[mode]
-        write_raster(out, speed_kph_to_friction(speed), grid, registry=registry)
+        with timed(steps, f"{mode}_write"):
+            write_raster(out, speed_kph_to_friction(speed), grid, registry=registry)
         outputs[mode] = out
         del speed
+    stats["seconds_step"] = steps
     stats["seconds_total"] = round(time.time() - t0, 1)
+    stats["peak_rss_gib"] = round(
+        process_peak_gib(), 3
+    )  # this block's own process (one per block)
     write_json(outputs_all["stats"], stats, registry=registry)
     return BlockResult(block_key=block_key, outputs=outputs, stats=stats)
 

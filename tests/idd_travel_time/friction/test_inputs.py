@@ -164,3 +164,34 @@ def test_load_input_paths_reads_optional_fabdem_dir() -> None:
     }
     assert io_.load_input_paths(base).fabdem_dir is None
     assert io_.load_input_paths({**base, "fabdem_dir": "/f"}).fabdem_dir == Path("/f")
+
+
+def test_read_geoparquet_bbox_filters_and_records_input_volume(tmp_path: Path) -> None:
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+    from shapely import box
+
+    from idd_travel_time.friction.inputs import read_geoparquet_bbox
+
+    geoms = [box(0, 0, 1, 1), box(10, 10, 11, 11), box(0.5, 0.5, 2, 2)]
+    table = pa.table(
+        {
+            "id": ["a", "b", "c"],
+            "bbox": [
+                {
+                    "xmin": g.bounds[0],
+                    "ymin": g.bounds[1],
+                    "xmax": g.bounds[2],
+                    "ymax": g.bounds[3],
+                }
+                for g in geoms
+            ],
+            "geometry": [g.wkb for g in geoms],
+        }
+    )
+    f = tmp_path / "layer.parquet"
+    pq.write_table(table, f)
+    got = read_geoparquet_bbox([f], (0.0, 0.0, 1.5, 1.5), columns=["id"])
+    assert sorted(got["id"]) == ["a", "c"]
+    assert got.attrs["input_volume"]["rows"] == 2
+    assert got.attrs["input_volume"]["mb"] > 0
