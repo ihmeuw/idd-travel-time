@@ -186,3 +186,46 @@ def test_write_raster_registers_in_sidecar_and_block_done_sees_it(
     assert "walking/B-1.tif" in registered
     assert "stats/B-1.json" in registered
     assert not list((out_dir / "walking").glob("*.tmp"))
+
+
+# ----------------------------------------------------------------------------
+# Instrumentation: per-step seconds, input volume, the process peak
+# ----------------------------------------------------------------------------
+
+
+def test_timed_accumulates_seconds_under_a_label() -> None:
+    steps: dict[str, float] = {}
+    with bd.timed(steps, "a"):
+        pass
+    with bd.timed(steps, "a"):
+        pass
+    with bd.timed(steps, "b"):
+        pass
+    assert set(steps) == {"a", "b"}
+    assert steps["a"] >= 0.0
+    msg = "x"
+    with pytest.raises(RuntimeError):  # the step is recorded even when the body raises
+        with bd.timed(steps, "c"):
+            raise RuntimeError(msg)
+    assert "c" in steps
+
+
+def test_layer_volume_reads_attrs_and_sums_classes() -> None:
+    g1 = _gdf([box(0, 0, 1, 1)], id=[1])
+    g1.attrs["input_volume"] = {"rows": 3, "mb": 1.5}
+    g2 = _gdf([box(0, 0, 1, 1)], id=[2])
+    g2.attrs["input_volume"] = {"rows": 2, "mb": 0.25}
+    assert bd.layer_volume(g1) == {"rows": 3, "mb": 1.5}
+    total = bd.layer_volume({"a": g1, "b": g2})
+    assert total["rows"] == 5
+    assert total["mb"] == pytest.approx(1.75)
+    assert total["classes"]["b"] == {"rows": 2, "mb": 0.25}
+    bare = _gdf([box(0, 0, 1, 1)], id=[3])  # a frame that did not come from the reader
+    assert bd.layer_volume(bare) == {"rows": 0, "mb": 0.0}
+
+
+def test_process_peak_gib_is_positive_and_monotone() -> None:
+    before = bd.process_peak_gib()
+    assert before > 0
+    _ballast = np.ones(32 * 1024 * 1024, dtype=np.uint8)  # 32 MiB touched
+    assert bd.process_peak_gib() >= before

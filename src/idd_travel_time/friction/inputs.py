@@ -95,7 +95,14 @@ def read_geoparquet_bbox(
     table = dataset.to_table(filter=flt, columns=[*columns, "geometry"])
     geometry = gpd.GeoSeries.from_wkb(table["geometry"].to_numpy(zero_copy_only=False))
     frame = table.drop(["geometry"]).to_pandas()
-    return gpd.GeoDataFrame(frame, geometry=geometry, crs=LONLAT_CRS)
+    out = gpd.GeoDataFrame(frame, geometry=geometry, crs=LONLAT_CRS)
+    # What the block actually scanned: the input-volume covariate for sizing
+    # (DECISIONS 2026-11-03); cell counts of the output do not carry it.
+    out.attrs["input_volume"] = {
+        "rows": int(table.num_rows),
+        "mb": table.nbytes / 1e6,
+    }
+    return out
 
 
 def read_roads(
