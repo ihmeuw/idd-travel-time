@@ -123,11 +123,11 @@ def test_classify_and_zone_counts() -> None:
     ]  # under on either axis dominates
     counts = au.zone_counts(c)
     assert counts.loc[1, "tasks"] == 2
-    assert counts.loc[1, "both_well"] == 2
+    assert counts.loc[1, "zone_well"] == 2
     assert counts.loc[2, "time_over"] == 1
     assert counts.loc[2, "mem_under"] == 1
-    assert counts.loc[2, "both_under"] == 1
-    assert counts.loc[2, "both_over"] == 0
+    assert counts.loc[2, "zone_under"] == 1
+    assert counts.loc[2, "zone_over"] == 0
 
 
 def test_plots_return_figures_with_legends() -> None:
