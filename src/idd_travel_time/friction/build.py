@@ -79,6 +79,8 @@ class BlockInputs:
     elevation: NDArray[np.float32]
     elevation_missing_tiles: list[str] = field(default_factory=list)
     elevation_sources: dict[str, int] = field(default_factory=dict)
+    elevation_cells_by_source: dict[str, int] = field(default_factory=dict)
+    elevation_nodata_tiles: list[str] = field(default_factory=list)
     input_volume: dict[str, Any] = field(
         default_factory=dict
     )  # rows and MB scanned per layer
@@ -142,7 +144,7 @@ def read_block_inputs(grid: BlockGrid, paths: io_.InputPaths) -> BlockInputs:
     steps: dict[str, float] = {}
     with timed(steps, "read_elevation"):
         tiles = io_.resolve_elevation_tiles(paths, bounds)
-        elevation = io_.elevation_on_grid(grid, tiles.files)
+        elevation, fill = io_.elevation_with_fallback(grid, tiles)
     with timed(steps, "read_land_cover"):
         land_cover = io_.read_land_cover(paths, bounds)
     with timed(steps, "read_roads"):
@@ -159,6 +161,8 @@ def read_block_inputs(grid: BlockGrid, paths: io_.InputPaths) -> BlockInputs:
         elevation=elevation,
         elevation_missing_tiles=tiles.missing,
         elevation_sources=tiles.sources,
+        elevation_cells_by_source=fill.cells_by_source,
+        elevation_nodata_tiles=fill.nodata_tiles,
         input_volume={
             "land_cover": layer_volume(land_cover),
             "roads": layer_volume(roads),
@@ -172,8 +176,13 @@ def read_block_inputs(grid: BlockGrid, paths: io_.InputPaths) -> BlockInputs:
 
 def offroad_speed(
     grid: BlockGrid, data: BlockInputs, params: FrictionParams, stats: dict[str, Any]
-) -> NDArray[np.float32]:
-    """Land-cover walking speed times the slope and altitude multipliers."""
+) -> tuple[NDArray[np.float32], NDArray[np.bool_]]:
+    """Land-cover walking speed times the slope and altitude multipliers, and which cells have land cover.
+
+    A cell without elevation has no slope and no altitude factor, so its
+    off-road speed is NaN rather than a flat-ground guess; the flag lets
+    :func:`compose_mode` tell that NaN from a cell no layer covers.
+    """
     overlap = np.zeros(grid.shape, dtype=np.uint8)
     lc = rasters.land_cover_speed(grid, data.land_cover, params, count=overlap)
     dx, dy = grid.ground_lengths()
@@ -181,12 +190,15 @@ def offroad_speed(
     factor = tobler_factor(slope, params.slope) * elevation_factor(
         data.elevation, params.slope
     )
-    stats["cells_land_cover"] = int(np.isfinite(lc).sum())
+    has_land_cover = np.isfinite(lc)
+    stats["cells_land_cover"] = int(has_land_cover.sum())
     stats["cells_land_cover_overlap"] = int((overlap >= 2).sum())  # noqa: PLR2004
     stats["cells_elevation_missing"] = int(np.isnan(data.elevation).sum())
     stats["elevation_missing_tiles"] = data.elevation_missing_tiles
     stats["elevation_source_tiles"] = dict(data.elevation_sources)
-    return np.asarray(lc * factor, dtype=np.float32)
+    stats["elevation_cells_by_source"] = dict(data.elevation_cells_by_source)
+    stats["elevation_nodata_tiles"] = list(data.elevation_nodata_tiles)
+    return np.asarray(lc * factor, dtype=np.float32), has_land_cover
 
 
 def compose_mode(
@@ -196,8 +208,16 @@ def compose_mode(
     offroad: NDArray[np.float32],
     mode: str,
     stats: dict[str, Any],
+    has_land_cover: NDArray[np.bool_] | None = None,
 ) -> NDArray[np.float32]:
-    """Speed (km/h) per cell for one mode, applying layer precedence."""
+    """Speed (km/h) per cell for one mode, applying layer precedence.
+
+    NaN is expected where no layer covers a cell and where the mode masks it
+    (ocean when walking). A cell that has a land-cover speed and still ends
+    NaN lost it to missing elevation: those are counted in
+    ``<mode>_cells_nodata_unexpected`` (0 when *has_land_cover* is not given)
+    and :func:`check_unexpected_nodata` refuses to write a block with any.
+    """
     if mode not in MODES:
         msg = f"unknown mode {mode!r}; expected one of {MODES}"
         raise ValueError(msg)
@@ -221,10 +241,63 @@ def compose_mode(
     stats[f"{mode}_cells_road"] = int(has_road.sum())
     stats[f"{mode}_cells_masked"] = int(mask.sum())
     stats[f"{mode}_cells_nodata"] = int(np.isnan(speed).sum())
+    stats[f"{mode}_cells_nodata_unexpected"] = (
+        int((np.isnan(speed) & has_land_cover & ~mask).sum())
+        if has_land_cover is not None
+        else 0
+    )
     stats[f"{mode}_cells_no_country"] = (
         int((country_idx == 0).sum()) if mode == "motorised" else None
     )
     return speed
+
+
+class UnexpectedNoDataError(RuntimeError):
+    """A block has cells with a land-cover speed but no friction value; nothing was written."""
+
+
+def unexpected_nodata(stats: dict[str, Any], modes: tuple[str, ...]) -> dict[str, int]:
+    """Per mode, the ``<mode>_cells_nodata_unexpected`` count that is above zero."""
+    counts = {m: int(stats.get(f"{m}_cells_nodata_unexpected", 0)) for m in modes}
+    return {m: n for m, n in counts.items() if n > 0}
+
+
+def check_unexpected_nodata(
+    block_key: str, stats: dict[str, Any], modes: tuple[str, ...]
+) -> None:
+    """Raise :class:`UnexpectedNoDataError` when any mode has unexpected NaN cells."""
+    bad = unexpected_nodata(stats, modes)
+    if bad:
+        msg = (
+            f"{block_key}: cells with land cover but no friction value: {bad}; "
+            f"elevation missing on {stats.get('cells_elevation_missing')} cells "
+            f"(tiles with empty cells: {stats.get('elevation_nodata_tiles')}; "
+            f"tiles no source has: {len(stats.get('elevation_missing_tiles') or [])}); "
+            "refusing to write the block"
+        )
+        raise UnexpectedNoDataError(msg)
+
+
+def unexpected_nodata_report(
+    out_dir: Path, block_keys: list[str], modes: tuple[str, ...] = MODES
+) -> dict[str, list[str]]:
+    """Blocks of a slot whose stats show unexpected NaN, and blocks whose stats predate the check.
+
+    Returns ``{"unexpected": [...], "unchecked": [...]}``; a block without a
+    stats file is in neither list (``block_done`` reports it).
+    """
+    unexpected: list[str] = []
+    unchecked: list[str] = []
+    for key in block_keys:
+        path = block_outputs(out_dir, key, modes)["stats"]
+        if not path.exists():
+            continue
+        stats = json.loads(path.read_text())
+        if not all(f"{m}_cells_nodata_unexpected" in stats for m in modes):
+            unchecked.append(key)
+        elif unexpected_nodata(stats, modes):
+            unexpected.append(key)
+    return {"unexpected": unexpected, "unchecked": unchecked}
 
 
 def _clear_stale_tmp(path: Path) -> None:
@@ -350,16 +423,26 @@ def build_block(
     }
     steps = dict(data.seconds_step)
     with timed(steps, "offroad"):
-        offroad = offroad_speed(grid, data, params, stats)
-    outputs: dict[str, Path] = {}
+        offroad, has_land_cover = offroad_speed(grid, data, params, stats)
+    # Every mode is composed before anything is written: a block with a cell
+    # that has land cover but no friction value is refused whole, so no output
+    # of it ever exists on disk and the registry never sees it as done.
+    speeds: dict[str, NDArray[np.float32]] = {}
     for mode in modes:
         with timed(steps, f"{mode}_compose"):
-            speed = compose_mode(grid, data, params, offroad, mode, stats)
+            speeds[mode] = compose_mode(
+                grid, data, params, offroad, mode, stats, has_land_cover
+            )
+    del offroad, has_land_cover
+    check_unexpected_nodata(block_key, stats, modes)
+    outputs: dict[str, Path] = {}
+    for mode in modes:
         out = outputs_all[mode]
         with timed(steps, f"{mode}_write"):
-            write_raster(out, speed_kph_to_friction(speed), grid, registry=registry)
+            write_raster(
+                out, speed_kph_to_friction(speeds.pop(mode)), grid, registry=registry
+            )
         outputs[mode] = out
-        del speed
     stats["seconds_step"] = steps
     stats["seconds_total"] = round(time.time() - t0, 1)
     stats["peak_rss_gib"] = round(

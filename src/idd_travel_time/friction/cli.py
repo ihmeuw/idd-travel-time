@@ -54,6 +54,7 @@ from idd_travel_time.friction.build import (
     MODES,
     block_done,
     build_block,
+    unexpected_nodata_report,
     write_manifest,
 )
 from idd_travel_time.friction.frame import load_tile_index
@@ -558,6 +559,16 @@ def verify(out_dir: Path) -> None:
     (out_dir / "missing.txt").write_text("\n".join(missing) + ("\n" if missing else ""))
     click.echo(
         f"{len(keys) - len(missing)} of {len(keys)} blocks complete; {len(missing)} missing -> {out_dir / 'missing.txt'}"
+    )
+    report = unexpected_nodata_report(out_dir, keys, MODES)
+    (out_dir / "unexpected_nodata.txt").write_text(
+        "".join(f"{k}\n" for k in report["unexpected"])
+    )
+    click.echo(
+        f"{len(report['unexpected'])} blocks with cells that have land cover but no friction value "
+        f"-> {out_dir / 'unexpected_nodata.txt'}; "
+        f"{len(report['unchecked'])} blocks built before that check existed (stats carry no "
+        "*_cells_nodata_unexpected)"
     )
 
 

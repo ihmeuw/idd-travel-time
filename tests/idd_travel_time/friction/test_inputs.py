@@ -44,25 +44,106 @@ def test_load_input_paths_derives_divisions_dir() -> None:
     assert p.elevation_fallback_dir is None
 
 
-def test_find_elevation_tiles_prefers_primary_then_fallback(tmp_path: Path) -> None:
-    prim, fb = tmp_path / "glo30" / "tiles", tmp_path / "glo90" / "tiles"
-    prim.mkdir(parents=True)
-    fb.mkdir(parents=True)
-    (prim / "A.tif").touch()
-    (fb / "A.tif").touch()
-    (fb / "B.tif").touch()
-    paths = io_.InputPaths(
-        roads_dir=tmp_path,
-        water_dir=tmp_path,
-        land_cover_dir=tmp_path,
-        divisions_dir=tmp_path,
-        elevation_dir=prim.parent,
-        elevation_fallback_dir=fb.parent,
-        tile_index_root=tmp_path,
+def _lonlat_tile(
+    path: Path,
+    data: np.ndarray,
+    *,
+    lon: float = 32.0,
+    lat_top: float = 1.0,
+    nodata: float | None = None,
+) -> Path:
+    """Write *data* as a one-degree EPSG:4326 tile whose north-west corner is (lon, lat_top)."""
+    n = data.shape[0]
+    with rasterio.open(
+        path,
+        "w",
+        driver="GTiff",
+        height=n,
+        width=n,
+        count=1,
+        dtype="float32",
+        crs="EPSG:4326",
+        transform=Affine(1 / n, 0, lon, 0, -1 / n, lat_top),
+        nodata=nodata,
+    ) as dst:
+        dst.write(data.astype(np.float32), 1)
+    return path
+
+
+def _grid_near(lon: float, lat: float, half_m: float = 2000.0) -> BlockGrid:
+    """A small block grid (ESRI:54034 metres) centred on (lon, lat)."""
+    import geopandas as gpd
+
+    cx, cy = (
+        gpd.GeoSeries.from_xy([lon], [lat], crs="EPSG:4326")
+        .to_crs("ESRI:54034")
+        .iloc[0]
+        .coords[0]
     )
-    files, missing = io_.find_elevation_tiles(paths, ["A", "B", "C"])
-    assert files == [prim / "A.tif", fb / "B.tif"]
-    assert missing == ["C"]
+    return BlockGrid("T", 40.0, cx - half_m, cy - half_m, cx + half_m, cy + half_m)
+
+
+def test_elevation_with_fallback_fills_empty_cells_from_the_next_source(
+    tmp_path: Path,
+) -> None:
+    n = 360
+    # FABDEM-like tile: 100 m everywhere, nodata (-9999, as the real tiles) in a
+    # band about 1.2 km tall through the 4 km grid's middle; GLO-30-like tile:
+    # 50 m everywhere.
+    fab_data = np.full((n, n), 100.0, dtype=np.float32)
+    fab_data[178:182, 165:195] = -9999.0
+    fab = _lonlat_tile(tmp_path / "N00E032_FABDEM_V1-2.tif", fab_data, nodata=-9999.0)
+    glo = _lonlat_tile(
+        tmp_path / "Copernicus_DSM_COG_10_N00_00_E032_00_DEM.tif",
+        np.full((n, n), 50.0, dtype=np.float32),
+    )
+    grid = _grid_near(32.5, 0.5)
+    tiles = io_.ElevationTiles(
+        files=[fab],
+        sources={"fabdem": 1, "glo30": 0, "glo90": 0},
+        missing=[],
+        by_source={"fabdem": {(0, 32): fab}, "glo30": {(0, 32): glo}, "glo90": {}},
+    )
+    z, fill = io_.elevation_with_fallback(grid, tiles)
+    assert z.shape == grid.shape
+    assert not np.isnan(z).any()  # every hole cell took the next source
+    values = set(np.unique(z.round(3)).tolist())
+    assert values == {50.0, 100.0}
+    n_hole = int((z == 50.0).sum())
+    assert n_hole > 0
+    assert fill.cells_by_source == {"fabdem": z.size - n_hole, "glo30": n_hole}
+    assert fill.nodata_tiles == [fab.stem]
+    # the same tile with no second source: the hole stays NaN and is reported
+    alone = io_.ElevationTiles(
+        files=[fab],
+        sources={"fabdem": 1, "glo30": 0, "glo90": 0},
+        missing=[],
+        by_source={"fabdem": {(0, 32): fab}, "glo30": {}, "glo90": {}},
+    )
+    z_alone, fill_alone = io_.elevation_with_fallback(grid, alone)
+    assert int(np.isnan(z_alone).sum()) == n_hole
+    assert fill_alone.cells_by_source == {"fabdem": z.size - n_hole}
+    assert fill_alone.nodata_tiles == [fab.stem]
+    # a clean first source leaves nothing pending: the second source is never read
+    clean = io_.ElevationTiles(
+        files=[glo],
+        sources={"fabdem": 0, "glo30": 1, "glo90": 0},
+        missing=[],
+        by_source={
+            "fabdem": {},
+            "glo30": {(0, 32): glo},
+            "glo90": {(0, 32): tmp_path / "absent.tif"},
+        },
+    )
+    z_clean, fill_clean = io_.elevation_with_fallback(grid, clean)
+    assert float(z_clean.min()) == float(z_clean.max()) == 50.0
+    assert fill_clean.cells_by_source == {"glo30": z.size}
+    assert fill_clean.nodata_tiles == []
+    # nothing at all: all NaN, nothing taken
+    nothing = io_.ElevationTiles(files=[], sources={}, missing=["x"], by_source={})
+    z_none, fill_none = io_.elevation_with_fallback(grid, nothing)
+    assert np.isnan(z_none).all()
+    assert fill_none == io_.ElevationFill(cells_by_source={}, nodata_tiles=[])
 
 
 def test_elevation_on_grid_resamples_a_lonlat_tile(tmp_path: Path) -> None:
@@ -108,6 +189,8 @@ def test_fabdem_and_copernicus_tile_names_share_the_corner_convention() -> None:
     assert (
         io_.copernicus_tile_name(-2, 31) == "Copernicus_DSM_COG_10_S02_00_E031_00_DEM"
     )
+    # the GLO-90 release (and the gap-fill mirror) names its tiles COG_30
+    assert io_.glo90_tile_name(39, 44) == "Copernicus_DSM_COG_30_N39_00_E044_00_DEM"
     assert io_.tile_corners((-150.2, 61.1, -149.8, 61.3)) == [(61, -151), (61, -150)]
 
 
@@ -124,10 +207,12 @@ def test_resolve_elevation_tiles_prefers_fabdem_then_glo30_then_glo90(
     # four tiles over (31..33E, -1..1N): A has all three sources, B glo30+glo90, C glo90 only, D nothing
     (fab / "S01E031_FABDEM_V1-2.tif").touch()
     (prim / "Copernicus_DSM_COG_10_S01_00_E031_00_DEM.tif").touch()
-    (fb / "Copernicus_DSM_COG_10_S01_00_E031_00_DEM.tif").touch()
+    (fb / "Copernicus_DSM_COG_30_S01_00_E031_00_DEM.tif").touch()
     (prim / "Copernicus_DSM_COG_10_S01_00_E032_00_DEM.tif").touch()
-    (fb / "Copernicus_DSM_COG_10_S01_00_E032_00_DEM.tif").touch()
-    (fb / "Copernicus_DSM_COG_10_N00_00_E031_00_DEM.tif").touch()
+    (fb / "Copernicus_DSM_COG_30_S01_00_E032_00_DEM.tif").touch()
+    (fb / "Copernicus_DSM_COG_30_N00_00_E031_00_DEM.tif").touch()
+    # a COG_10 name in the gap-fill dir is not a GLO-90 tile and must not be found
+    (fb / "Copernicus_DSM_COG_10_N00_00_E032_00_DEM.tif").touch()
     paths = io_.InputPaths(
         roads_dir=tmp_path,
         water_dir=tmp_path,
@@ -142,10 +227,23 @@ def test_resolve_elevation_tiles_prefers_fabdem_then_glo30_then_glo90(
     assert tiles.files == [
         fab / "S01E031_FABDEM_V1-2.tif",
         prim / "Copernicus_DSM_COG_10_S01_00_E032_00_DEM.tif",
-        fb / "Copernicus_DSM_COG_10_N00_00_E031_00_DEM.tif",
+        fb / "Copernicus_DSM_COG_30_N00_00_E031_00_DEM.tif",
     ]
     assert tiles.sources == {"fabdem": 1, "glo30": 1, "glo90": 1}
     assert tiles.missing == ["Copernicus_DSM_COG_10_N00_00_E032_00_DEM"]
+    # every existing file is kept by source, keyed by the tile's (lat, lon) corner
+    assert tiles.by_source == {
+        "fabdem": {(-1, 31): fab / "S01E031_FABDEM_V1-2.tif"},
+        "glo30": {
+            (-1, 31): prim / "Copernicus_DSM_COG_10_S01_00_E031_00_DEM.tif",
+            (-1, 32): prim / "Copernicus_DSM_COG_10_S01_00_E032_00_DEM.tif",
+        },
+        "glo90": {
+            (-1, 31): fb / "Copernicus_DSM_COG_30_S01_00_E031_00_DEM.tif",
+            (-1, 32): fb / "Copernicus_DSM_COG_30_S01_00_E032_00_DEM.tif",
+            (0, 31): fb / "Copernicus_DSM_COG_30_N00_00_E031_00_DEM.tif",
+        },
+    }
     # without a FABDEM dir the Copernicus chain alone serves
     no_fab = io_.InputPaths(**{**paths.__dict__, "fabdem_dir": None})
     assert (
