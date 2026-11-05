@@ -196,9 +196,15 @@ def classify(usage: pd.DataFrame, bins: EfficiencyBins | None = None) -> pd.Data
 
 
 def zone_counts(classified: pd.DataFrame) -> pd.DataFrame:
-    """Per workflow: task counts in each zone for time, for memory, and combined."""
+    """Per workflow: task counts per zone on time, on memory, and combined.
+
+    ``time_*`` and ``mem_*`` count one axis each. ``zone_*`` counts the
+    combined zone: ``zone_under`` = under on either axis, ``zone_well`` = well
+    on both, ``zone_over`` = the rest (over on at least one axis, under on
+    none).
+    """
     parts = []
-    for col, prefix in (("time_zone", "time"), ("mem_zone", "mem"), ("zone", "both")):
+    for col, prefix in (("time_zone", "time"), ("mem_zone", "mem"), ("zone", "zone")):
         ct = pd.crosstab(classified["workflow"], classified[col]).reindex(
             columns=ZONES, fill_value=0
         )
@@ -209,7 +215,15 @@ def zone_counts(classified: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+COMBINED_LABELS = {
+    "over": "over on at least one axis, under on none",
+    "well": "correct on both axes",
+    "under": "under on either axis",
+}
+
+
 def _zone_labels(bins: EfficiencyBins | None) -> dict[str, str]:
+    """Per-axis zone labels with the thresholds spelled out."""
     b = bins or EfficiencyBins()
     return {
         "over": f"over-resourced (< {b.over_max:.0%} used)",
@@ -335,7 +349,6 @@ def plot_usage_by_tier(
     from matplotlib.lines import Line2D
 
     b = bins or EfficiencyBins()
-    labels = _zone_labels(bins)
     tiers = [t for t in TIERS if t in set(classified["tier"])]
     fig, axes = plt.subplots(
         1,
@@ -392,7 +405,7 @@ def plot_usage_by_tier(
             color="none",
             markerfacecolor=ZONE_COLOR[z],
             markersize=8,
-            label=labels[z],
+            label=COMBINED_LABELS[z],
         )
         for z in ZONES
     ]
@@ -412,10 +425,8 @@ def plot_usage_by_tier(
 def plot_ratios(classified: pd.DataFrame, bins: EfficiencyBins | None = None) -> Any:
     """Plot 3: every task, x = time used/asked, y = memory used/asked; colour and marker by tier; plane shaded by zone."""
     import matplotlib.pyplot as plt
-    from matplotlib.lines import Line2D
 
     b = bins or EfficiencyBins()
-    labels = _zone_labels(bins)
     fig, ax = plt.subplots(figsize=(8, 7), facecolor=SURFACE)
     xmax = max(1.1, float(classified["time_used_over_asked"].max()) * 1.1)
     ymax = max(1.1, float(classified["mem_used_over_asked"].max()) * 1.1)
@@ -440,29 +451,8 @@ def plot_ratios(classified: pd.DataFrame, bins: EfficiencyBins | None = None) ->
     ax.set_xlim(0, xmax)
     ax.set_ylim(0, ymax)
     _style_axes(ax, "time used / asked", "memory used / asked")
-    ax.set_title(
-        f"Used over asked, {len(classified)} tasks; shading: {labels['over']} / {labels['well']} / {labels['under']}",
-        color=INK,
-        loc="left",
-        fontsize=10,
-        wrap=True,
-    )
-    handles, _ = ax.get_legend_handles_labels()
-    handles += [
-        Line2D(
-            [],
-            [],
-            marker="s",
-            color="none",
-            markerfacecolor=ZONE_COLOR[z],
-            alpha=0.5,
-            markersize=10,
-            label=labels[z],
-        )
-        for z in ZONES
-    ]
+    ax.set_title(f"Used over asked, {len(classified)} tasks", color=INK, loc="left")
     ax.legend(
-        handles=handles,
         loc="upper left",
         bbox_to_anchor=(1.01, 1),
         frameon=False,
