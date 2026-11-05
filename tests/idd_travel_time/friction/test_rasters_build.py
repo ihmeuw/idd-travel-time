@@ -110,18 +110,83 @@ def test_compose_mode_layer_precedence(params: FrictionParams) -> None:
         [LineString([(0, 100), (400, 100)])], id=["p"]
     )  # through the lake
     stats: dict[str, Any] = {}
-    off = bd.offroad_speed(GRID, data, params, stats)
+    off, has_lc = bd.offroad_speed(GRID, data, params, stats)
+    assert has_lc.all()
     assert off[2, 8] == pytest.approx(4.86 * 1.016, abs=1e-3)  # grass, flat, sea level
-    walk = bd.compose_mode(GRID, data, params, off, "walking", stats)
+    walk = bd.compose_mode(GRID, data, params, off, "walking", stats, has_lc)
     assert walk[8, 1] == 1.0  # water replaces grass on the walking surface
     assert walk[7, 1] == 5.0  # road replaces water (bridge), capped to walking
-    motor = bd.compose_mode(GRID, data, params, off, "motorised", stats)
+    motor = bd.compose_mode(GRID, data, params, off, "motorised", stats, has_lc)
     assert motor[8, 1] == 10.0
     assert motor[7, 1] == 50.0  # Uganda primary
     assert stats["walking_cells_road"] == stats["motorised_cells_road"] > 0
+    assert stats["walking_cells_nodata_unexpected"] == 0
+    assert stats["motorised_cells_nodata_unexpected"] == 0
+    bd.check_unexpected_nodata("T", stats, bd.MODES)  # nothing to refuse
     f = bd.speed_kph_to_friction(np.array([60.0, np.nan], dtype=np.float32))
     assert f[0] == pytest.approx(0.001)
     assert np.isnan(f[1])
+
+
+def test_missing_elevation_gives_nan_friction_and_is_refused(
+    params: FrictionParams,
+) -> None:
+    # grass everywhere, a road down column 5, no elevation on rows 0-3
+    elevation = np.zeros(GRID.shape, dtype=np.float32)
+    elevation[:4, :] = np.nan
+    data = bd.BlockInputs(
+        land_cover=_gdf([box(0, 0, 400, 400)], subtype=["grass"]),
+        roads={c: _gdf([], id=[]) for c in params.road_crosswalk},
+        water={c: _gdf([], id=[]) for c in params.water},
+        countries=_gdf([box(0, 0, 400, 400)], country=["UG"], iso3=["UGA"]),
+        elevation=elevation,
+    )
+    data.roads["primary"] = _gdf([LineString([(200, 0), (200, 400)])], id=["p"])
+    stats: dict[str, Any] = {}
+    off, has_lc = bd.offroad_speed(GRID, data, params, stats)
+    # (a) no elevation -> no slope or altitude factor -> NaN, never a flat-ground guess
+    assert np.isnan(off[:4, :]).all()
+    assert np.isfinite(off[5:, :]).all()  # row 4 borders the gap: its gradient is NaN
+    assert stats["cells_elevation_missing"] == 40
+    walk = bd.compose_mode(GRID, data, params, off, "walking", stats, has_lc)
+    # a road has its own speed, elevation or not; the grass cells beside it are NaN
+    assert np.isfinite(walk[:4, 5]).all()
+    assert np.isnan(walk[:4, 0]).all()
+    # (b) those cells have land cover and still no value: counted and refused
+    n_road_rows = int(np.isfinite(walk[:5, :]).sum())
+    assert stats["walking_cells_nodata_unexpected"] == 50 - n_road_rows
+    assert bd.unexpected_nodata(stats, ("walking",)) == {"walking": 50 - n_road_rows}
+    with pytest.raises(bd.UnexpectedNoDataError, match="T: cells with land cover"):
+        bd.check_unexpected_nodata("T", stats, ("walking",))
+    # without the flag the count is 0 and nothing is refused (the stat is unavailable)
+    legacy: dict[str, Any] = {}
+    bd.compose_mode(GRID, data, params, off, "walking", legacy)
+    assert legacy["walking_cells_nodata_unexpected"] == 0
+    assert bd.unexpected_nodata(legacy, ("walking",)) == {}
+
+
+def test_unexpected_nodata_report_reads_block_stats(tmp_path: Path) -> None:
+    stats_dir = tmp_path / "stats"
+    stats_dir.mkdir()
+    modes = ("motorised", "walking")
+    checked_ok = {f"{m}_cells_nodata_unexpected": 0 for m in modes}
+    checked_bad = {
+        "motorised_cells_nodata_unexpected": 0,
+        "walking_cells_nodata_unexpected": 3,
+    }
+    legacy = {"walking_cells_nodata": 5}  # built before the check existed
+    for key, payload in (
+        ("B-0001X-0001Y", checked_ok),
+        ("B-0002X-0001Y", checked_bad),
+        ("B-0003X-0001Y", legacy),
+    ):
+        (stats_dir / f"{key}.json").write_text(json.dumps(payload))
+    report = bd.unexpected_nodata_report(
+        tmp_path,
+        ["B-0001X-0001Y", "B-0002X-0001Y", "B-0003X-0001Y", "B-0004X-0001Y"],
+        modes,
+    )
+    assert report == {"unexpected": ["B-0002X-0001Y"], "unchecked": ["B-0003X-0001Y"]}
 
 
 def test_compose_mode_rejects_unknown_mode(params: FrictionParams) -> None:
